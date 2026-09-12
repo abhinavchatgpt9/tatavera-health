@@ -53,7 +53,7 @@ export default function LoginPage() {
       }
       if (res.ok && data.success) {
         setStatus('idle');
-        router.push('/dashboard');
+        router.push(portalPathForRole(data.user?.role));
         return;
       }
       if (data.code === 'EMAIL_NOT_VERIFIED') {
@@ -190,14 +190,11 @@ export default function LoginPage() {
                   placeholder="••••••••"
                 />
               </div>
-              <p className="text-xs text-gray-500">
-                After your password is checked, we email you a one-time code (2FA) to complete login.
-              </p>
               <button
                 type="submit" disabled={status === 'loading'}
                 className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold rounded-xl transition-colors"
               >
-                {status === 'loading' ? 'Sending code…' : 'Continue to email code'}
+                {status === 'loading' ? 'Logging in…' : 'Log In'}
               </button>
             </form>
           ) : (
