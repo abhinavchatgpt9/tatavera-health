@@ -1,43 +1,59 @@
 import type { Metadata } from 'next';
+import { Building2 } from 'lucide-react';
+
 import HospitalLayout from '@/components/HospitalLayout';
-import { MOCK_HOSPITAL_DEPARTMENTS } from '@/lib/portal-mock-data';
+import { PortalPage, PageHeader } from '@/components/portal/PortalPage';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { getPortalSession } from '@/lib/portal-session';
+import { getHospitalDepartments } from '@/lib/portal-data';
 
-export const metadata: Metadata = { title: 'Departments | Tatavera Health' };
+export const metadata: Metadata = { title: 'Departments | Hospital Portal' };
+export const dynamic = 'force-dynamic';
 
-export default function HospitalDepartmentsPage() {
+export default async function HospitalDepartmentsPage() {
+  const session = await getPortalSession(['HOSPITAL_ADMIN', 'ADMIN']);
+  const departments = await getHospitalDepartments(session);
+
   return (
     <HospitalLayout>
-      <div className="p-6 lg:p-10 max-w-6xl">
-        <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Departments</h1>
-            <p className="text-gray-500 mt-1">{MOCK_HOSPITAL_DEPARTMENTS.length} departments</p>
-          </div>
-          <button className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-colors">
-            + Add Department
-          </button>
-        </div>
+      <PortalPage>
+        <PageHeader
+          title="Departments"
+          description={`${departments.length} ${departments.length === 1 ? 'department' : 'departments'} at your hospital`}
+        />
 
-        {MOCK_HOSPITAL_DEPARTMENTS.length === 0 ? (
-          <div className="text-center py-16 text-gray-400 bg-white border border-gray-100 rounded-2xl">
-            <p className="text-4xl mb-3">🏢</p>
-            <p>No departments yet.</p>
-          </div>
+        {departments.length === 0 ? (
+          <EmptyState
+            icon={<Building2 className="h-6 w-6" aria-hidden="true" />}
+            title="No departments yet"
+            description="Departments organise your specialties for patients browsing the public site."
+          />
         ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {MOCK_HOSPITAL_DEPARTMENTS.map((dept) => (
-              <div key={dept.id} className="bg-white border border-gray-100 rounded-2xl p-6">
-                <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-lg mb-3">
-                  🏢
-                </div>
-                <h2 className="font-bold text-gray-900">{dept.name}</h2>
-                <p className="text-sm text-gray-500 mt-1">Head: {dept.headDoctor}</p>
-                <p className="text-xs text-gray-400 mt-3">{dept.doctorCount} doctors</p>
-              </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {departments.map((d) => (
+              <article
+                key={d.id}
+                className="rounded-2xl border border-slate-200 bg-white p-5 shadow-card dark:border-slate-800 dark:bg-slate-900"
+              >
+                <h2 className="font-semibold text-slate-900 dark:text-white">{d.name}</h2>
+                {d.description && (
+                  <p className="mt-2 line-clamp-3 text-sm text-slate-500 dark:text-slate-400">{d.description}</p>
+                )}
+                <dl className="mt-4 space-y-1.5 border-t border-slate-100 pt-4 text-sm dark:border-slate-800">
+                  <div className="flex justify-between gap-3">
+                    <dt className="text-slate-400 dark:text-slate-500">Head</dt>
+                    <dd className="text-right font-medium text-slate-900 dark:text-white">{d.headDoctor ?? '—'}</dd>
+                  </div>
+                  <div className="flex justify-between gap-3">
+                    <dt className="text-slate-400 dark:text-slate-500">Doctors</dt>
+                    <dd className="text-right font-medium text-slate-900 dark:text-white">{d.doctorCount}</dd>
+                  </div>
+                </dl>
+              </article>
             ))}
           </div>
         )}
-      </div>
+      </PortalPage>
     </HospitalLayout>
   );
 }

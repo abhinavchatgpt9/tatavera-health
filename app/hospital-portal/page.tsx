@@ -1,113 +1,143 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+
 import HospitalLayout from '@/components/HospitalLayout';
+import { PortalPage, PageHeader, StatGrid, Panel, PanelEmpty, Pill, formatMoney, formatDate } from '@/components/portal/PortalPage';
+import { getPortalSession } from '@/lib/portal-session';
 import {
-  MOCK_HOSPITAL,
-  MOCK_HOSPITAL_DOCTORS,
-  MOCK_HOSPITAL_DEPARTMENTS,
-  MOCK_HOSPITAL_LEADS,
-  MOCK_HOSPITAL_QUOTATIONS,
-} from '@/lib/portal-mock-data';
-import { LEAD_STAGE_LABELS, LEAD_STAGE_COLORS } from '@/lib/lead-stage';
+  getHospitalProfile,
+  getHospitalDashboardStats,
+  getHospitalLeads,
+  getHospitalQuotations,
+} from '@/lib/portal-data';
+import { LEAD_STAGE_LABELS, LEAD_STAGE_COLORS, QUOTATION_STATUS_COLORS } from '@/lib/lead-stage';
 
 export const metadata: Metadata = { title: 'Hospital Dashboard | Tatavera Health' };
+export const dynamic = 'force-dynamic';
 
-export default function HospitalDashboard() {
-  const doctorCount = MOCK_HOSPITAL_DOCTORS.length;
-  const departmentCount = MOCK_HOSPITAL_DEPARTMENTS.length;
-  const activeLeads = MOCK_HOSPITAL_LEADS.length;
-  const pendingQuotations = MOCK_HOSPITAL_QUOTATIONS.filter(
-    (q) => q.status === 'DRAFT' || q.status === 'SENT'
-  ).length;
+export default async function HospitalDashboard() {
+  const session = await getPortalSession(['HOSPITAL_ADMIN', 'ADMIN']);
+
+  const [hospital, stats, leads, quotations] = await Promise.all([
+    getHospitalProfile(session),
+    getHospitalDashboardStats(session),
+    getHospitalLeads(session),
+    getHospitalQuotations(session),
+  ]);
+
+  if (!hospital) {
+    return (
+      <HospitalLayout>
+        <PortalPage>
+          <PageHeader title="No hospital linked" />
+          <Panel title="What this means">
+            <p className="text-sm text-slate-600 dark:text-slate-300">
+              This account has the {session.role === 'ADMIN' ? 'ADMIN' : 'HOSPITAL_ADMIN'} role but is not linked to a
+              hospital record, so there is nothing to show. An administrator can link it from{' '}
+              <Link href="/admin-portal/users" className="font-medium text-blue-600 hover:underline dark:text-blue-400">
+                Admin → Users
+              </Link>
+              .
+            </p>
+          </Panel>
+        </PortalPage>
+      </HospitalLayout>
+    );
+  }
 
   return (
     <HospitalLayout>
-      <div className="p-6 lg:p-10 max-w-6xl">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Welcome back 👋</h1>
-          <p className="text-gray-500 mt-1">Here&apos;s an overview of your hospital&apos;s activity.</p>
-        </div>
+      <PortalPage>
+        <PageHeader
+          title={hospital.name}
+          description={`${hospital.city}, ${hospital.country}${hospital.accreditations.length ? ` · ${hospital.accreditations.join(', ')}` : ''}`}
+        />
 
-        {/* Hospital Info Card */}
-        <div className="bg-white border border-gray-100 rounded-2xl p-6 mb-8">
-          <div className="flex items-start justify-between flex-wrap gap-4">
-            <div>
-              <h2 className="text-xl font-bold text-gray-900">{MOCK_HOSPITAL.name}</h2>
-              <p className="text-gray-500 mt-1">{MOCK_HOSPITAL.city}, {MOCK_HOSPITAL.country}</p>
-              <div className="flex items-center gap-2 mt-3 flex-wrap">
-                {MOCK_HOSPITAL.accreditations.map((a) => (
-                  <span key={a} className="px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
-                    {a}
-                  </span>
+        <StatGrid
+          stats={[
+            { label: 'Active Leads', value: stats.activeLeads, emoji: '🎯' },
+            { label: 'Pending Quotations', value: stats.pendingQuotations, emoji: '📋' },
+            { label: 'Confirmed Value', value: formatMoney(stats.quotedValue), emoji: '💰', hint: 'Accepted quotations' },
+            { label: 'Upcoming Appointments', value: stats.upcomingAppointments, emoji: '📅' },
+          ]}
+        />
+
+        <div className="mb-6 grid gap-6 md:grid-cols-2">
+          <Panel
+            title="Recent Leads"
+            actions={
+              <Link href="/hospital-portal/leads" className="text-xs font-semibold text-blue-600 hover:underline dark:text-blue-400">
+                View all
+              </Link>
+            }
+          >
+            {leads.length === 0 ? (
+              <PanelEmpty>No leads have been matched to your hospital yet.</PanelEmpty>
+            ) : (
+              <ul className="space-y-3">
+                {leads.slice(0, 5).map((lead) => (
+                  <li key={lead.id} className="flex items-start justify-between gap-3 rounded-xl bg-slate-50 p-3 dark:bg-slate-800/50">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-slate-900 dark:text-white">{lead.name}</p>
+                      <p className="truncate text-xs text-slate-400 dark:text-slate-500">
+                        {lead.country} · {lead.treatment}
+                      </p>
+                    </div>
+                    <Pill className={LEAD_STAGE_COLORS[lead.stage] ?? 'bg-slate-100 text-slate-700'}>
+                      {LEAD_STAGE_LABELS[lead.stage] ?? lead.stage}
+                    </Pill>
+                  </li>
                 ))}
-              </div>
-            </div>
-            <div className="flex gap-6 text-right">
-              <div>
-                <p className="text-2xl font-bold text-gray-900">⭐ {MOCK_HOSPITAL.rating}</p>
-                <p className="text-xs text-gray-500 mt-1">Rating</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900">{MOCK_HOSPITAL.bedsCount}</p>
-                <p className="text-xs text-gray-500 mt-1">Beds</p>
-              </div>
-            </div>
-          </div>
-        </div>
+              </ul>
+            )}
+          </Panel>
 
-        {/* Stat cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {[
-            { label: 'Doctors', value: doctorCount, emoji: '🩺' },
-            { label: 'Departments', value: departmentCount, emoji: '🏢' },
-            { label: 'Active Leads', value: activeLeads, emoji: '📋' },
-            { label: 'Pending Quotations', value: pendingQuotations, emoji: '💰' },
-          ].map((stat) => (
-            <div key={stat.label} className="bg-white border border-gray-100 rounded-2xl p-5">
-              <div className="text-2xl mb-2">{stat.emoji}</div>
-              <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-              <p className="text-xs text-gray-500 mt-1">{stat.label}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Recent Leads */}
-        <div className="bg-white border border-gray-100 rounded-2xl p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-bold text-gray-900">Recent Patient Leads</h2>
-            <Link href="/hospital-portal/leads" className="text-blue-600 text-sm font-semibold hover:underline">View all</Link>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-gray-400 border-b border-gray-100">
-                  <th className="pb-2 font-medium">Patient</th>
-                  <th className="pb-2 font-medium">Treatment</th>
-                  <th className="pb-2 font-medium">Stage</th>
-                  <th className="pb-2 font-medium text-right">Value</th>
-                </tr>
-              </thead>
-              <tbody>
-                {MOCK_HOSPITAL_LEADS.map((lead) => (
-                  <tr key={lead.id} className="border-b border-gray-50 last:border-0">
-                    <td className="py-3">
-                      <p className="font-medium text-gray-900">{lead.name}</p>
-                      <p className="text-xs text-gray-400">{lead.country}</p>
-                    </td>
-                    <td className="py-3 text-gray-600">{lead.treatment}</td>
-                    <td className="py-3">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${LEAD_STAGE_COLORS[lead.stage]}`}>
-                        {LEAD_STAGE_LABELS[lead.stage]}
-                      </span>
-                    </td>
-                    <td className="py-3 text-right font-medium text-gray-900">${lead.value.toLocaleString()}</td>
-                  </tr>
+          <Panel
+            title="Recent Quotations"
+            actions={
+              <Link href="/hospital-portal/quotations" className="text-xs font-semibold text-blue-600 hover:underline dark:text-blue-400">
+                View all
+              </Link>
+            }
+          >
+            {quotations.length === 0 ? (
+              <PanelEmpty>You have not issued any quotations yet.</PanelEmpty>
+            ) : (
+              <ul className="space-y-3">
+                {quotations.slice(0, 5).map((q) => (
+                  <li key={q.id} className="flex items-start justify-between gap-3 rounded-xl bg-slate-50 p-3 dark:bg-slate-800/50">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-slate-900 dark:text-white">{q.patient}</p>
+                      <p className="text-xs text-slate-400 dark:text-slate-500">
+                        {formatMoney(q.totalAmount, q.currency)} · valid to {formatDate(q.validUntil)}
+                      </p>
+                    </div>
+                    <Pill className={QUOTATION_STATUS_COLORS[q.status] ?? 'bg-slate-100 text-slate-700'}>{q.status}</Pill>
+                  </li>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </ul>
+            )}
+          </Panel>
         </div>
-      </div>
+
+        <Panel title="Hospital at a glance">
+          <dl className="grid gap-x-8 gap-y-3 text-sm sm:grid-cols-3">
+            {[
+              ['Doctors listed', String(stats.doctors)],
+              ['Departments', String(stats.departments)],
+              ['Beds', hospital.bedsCount ? String(hospital.bedsCount) : '—'],
+              ['Founded', hospital.foundedYear ? String(hospital.foundedYear) : '—'],
+              ['Rating', `${hospital.rating.toFixed(1)} (${hospital.reviewCount} reviews)`],
+              ['Specialties', hospital.specialties.length ? `${hospital.specialties.length} listed` : '—'],
+            ].map(([label, value]) => (
+              <div key={label}>
+                <dt className="text-slate-400 dark:text-slate-500">{label}</dt>
+                <dd className="font-medium text-slate-900 dark:text-white">{value}</dd>
+              </div>
+            ))}
+          </dl>
+        </Panel>
+      </PortalPage>
     </HospitalLayout>
   );
 }

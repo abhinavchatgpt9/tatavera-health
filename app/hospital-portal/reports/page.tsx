@@ -1,91 +1,111 @@
 import type { Metadata } from 'next';
+
 import HospitalLayout from '@/components/HospitalLayout';
-import { MOCK_HOSPITAL_DEPARTMENTS } from '@/lib/portal-mock-data';
+import { PortalPage, PageHeader, StatGrid, Panel, PanelEmpty, formatMoney } from '@/components/portal/PortalPage';
+import { getPortalSession } from '@/lib/portal-session';
+import { getHospitalDashboardStats, getHospitalLeads, getHospitalQuotations } from '@/lib/portal-data';
+import { LEAD_STAGE_LABELS } from '@/lib/lead-stage';
 
-export const metadata: Metadata = { title: 'Reports | Tatavera Health' };
+export const metadata: Metadata = { title: 'Reports | Hospital Portal' };
+export const dynamic = 'force-dynamic';
 
-const TREATMENTS_BY_VOLUME = [
-  { treatment: 'Bypass Surgery', count: 42 },
-  { treatment: 'Angioplasty', count: 35 },
-  { treatment: 'Valve Replacement', count: 24 },
-  { treatment: 'Pacemaker Implant', count: 18 },
-  { treatment: 'Cardiac Screening', count: 61 },
-  { treatment: 'Electrophysiology Study', count: 12 },
-];
+/** Horizontal bar, sized as a share of the largest row. */
+function Bar({ label, value, max, suffix }: { label: string; value: number; max: number; suffix?: string }) {
+  const width = max === 0 ? 0 : Math.round((value / max) * 100);
+  return (
+    <div>
+      <div className="mb-1 flex justify-between gap-4 text-sm">
+        <span className="text-slate-600 dark:text-slate-300">{label}</span>
+        <span className="font-medium text-slate-900 dark:text-white">
+          {value}
+          {suffix}
+        </span>
+      </div>
+      <div className="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+        <div className="h-full rounded-full bg-blue-500" style={{ width: `${width}%` }} />
+      </div>
+    </div>
+  );
+}
 
-const REVENUE_BY_DEPARTMENT = MOCK_HOSPITAL_DEPARTMENTS.map((dept, idx) => ({
-  name: dept.name,
-  revenue: [420000, 310000, 185000][idx] ?? 100000,
-}));
+export default async function HospitalReportsPage() {
+  const session = await getPortalSession(['HOSPITAL_ADMIN', 'ADMIN']);
 
-export default function HospitalReportsPage() {
-  const maxTreatment = Math.max(...TREATMENTS_BY_VOLUME.map((t) => t.count));
-  const maxRevenue = Math.max(...REVENUE_BY_DEPARTMENT.map((d) => d.revenue));
+  const [stats, leads, quotations] = await Promise.all([
+    getHospitalDashboardStats(session),
+    getHospitalLeads(session),
+    getHospitalQuotations(session),
+  ]);
+
+  // Lead volume by stage.
+  const byStage = new Map<string, number>();
+  for (const lead of leads) byStage.set(lead.stage, (byStage.get(lead.stage) ?? 0) + 1);
+  const stageRows = [...byStage.entries()]
+    .map(([stage, count]) => ({ label: LEAD_STAGE_LABELS[stage] ?? stage, count }))
+    .sort((a, b) => b.count - a.count);
+  const maxStage = Math.max(1, ...stageRows.map((r) => r.count));
+
+  // Lead volume by source country.
+  const byCountry = new Map<string, number>();
+  for (const lead of leads) byCountry.set(lead.country, (byCountry.get(lead.country) ?? 0) + 1);
+  const countryRows = [...byCountry.entries()]
+    .map(([label, count]) => ({ label, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 8);
+  const maxCountry = Math.max(1, ...countryRows.map((r) => r.count));
+
+  const accepted = quotations.filter((q) => q.status === 'ACCEPTED');
+  const declined = quotations.filter((q) => q.status === 'DECLINED');
+  const winRate =
+    accepted.length + declined.length === 0
+      ? 0
+      : Math.round((accepted.length / (accepted.length + declined.length)) * 100);
 
   return (
     <HospitalLayout>
-      <div className="p-6 lg:p-10 max-w-6xl">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Reports</h1>
-          <p className="text-gray-500 mt-1">Hospital performance analytics.</p>
+      <PortalPage>
+        <PageHeader title="Reports" description="How your hospital is performing on the platform." />
+
+        <StatGrid
+          stats={[
+            { label: 'Total Leads', value: leads.length, emoji: '🎯' },
+            { label: 'Quotations Issued', value: quotations.length, emoji: '📋' },
+            { label: 'Quotation Win Rate', value: `${winRate}%`, emoji: '✅', hint: `${accepted.length} accepted, ${declined.length} declined` },
+            { label: 'Confirmed Value', value: formatMoney(stats.quotedValue), emoji: '💰' },
+          ]}
+        />
+
+        <div className="grid gap-6 md:grid-cols-2">
+          <Panel title="Leads by stage">
+            {stageRows.length === 0 ? (
+              <PanelEmpty>No leads matched to your hospital yet.</PanelEmpty>
+            ) : (
+              <div className="space-y-3">
+                {stageRows.map((row) => (
+                  <Bar key={row.label} label={row.label} value={row.count} max={maxStage} />
+                ))}
+              </div>
+            )}
+          </Panel>
+
+          <Panel title="Top source countries">
+            {countryRows.length === 0 ? (
+              <PanelEmpty>No leads matched to your hospital yet.</PanelEmpty>
+            ) : (
+              <div className="space-y-3">
+                {countryRows.map((row) => (
+                  <Bar key={row.label} label={row.label} value={row.count} max={maxCountry} />
+                ))}
+              </div>
+            )}
+          </Panel>
         </div>
 
-        {/* Stat cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {[
-            { label: 'Treatments This Month', value: 192, emoji: '🩺' },
-            { label: 'Revenue This Month', value: '$915,000', emoji: '💰' },
-            { label: 'Avg. Patient Satisfaction', value: '4.8 / 5', emoji: '⭐' },
-            { label: 'Bed Occupancy Rate', value: '78%', emoji: '🛏️' },
-          ].map((stat) => (
-            <div key={stat.label} className="bg-white border border-gray-100 rounded-2xl p-5">
-              <div className="text-2xl mb-2">{stat.emoji}</div>
-              <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-              <p className="text-xs text-gray-500 mt-1">{stat.label}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Treatments by Volume */}
-          <div className="bg-white border border-gray-100 rounded-2xl p-6">
-            <h2 className="font-bold text-gray-900 mb-4">Treatments by Volume</h2>
-            <div className="space-y-3">
-              {TREATMENTS_BY_VOLUME.map((t) => (
-                <div key={t.treatment} className="flex items-center gap-3">
-                  <p className="text-xs text-gray-500 w-36 flex-shrink-0 truncate">{t.treatment}</p>
-                  <div className="flex-1 bg-gray-100 rounded-full h-2">
-                    <div
-                      className="bg-blue-500 h-2 rounded-full"
-                      style={{ width: `${(t.count / maxTreatment) * 100}%` }}
-                    />
-                  </div>
-                  <p className="text-xs font-medium text-gray-700 w-10 text-right">{t.count}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Revenue by Department */}
-          <div className="bg-white border border-gray-100 rounded-2xl p-6">
-            <h2 className="font-bold text-gray-900 mb-4">Revenue by Department</h2>
-            <div className="space-y-3">
-              {REVENUE_BY_DEPARTMENT.map((d) => (
-                <div key={d.name} className="flex items-center gap-3">
-                  <p className="text-xs text-gray-500 w-36 flex-shrink-0 truncate">{d.name}</p>
-                  <div className="flex-1 bg-gray-100 rounded-full h-2">
-                    <div
-                      className="bg-emerald-500 h-2 rounded-full"
-                      style={{ width: `${(d.revenue / maxRevenue) * 100}%` }}
-                    />
-                  </div>
-                  <p className="text-xs font-medium text-gray-700 w-16 text-right">${(d.revenue / 1000).toFixed(0)}k</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
+        <p className="mt-6 text-sm text-slate-500 dark:text-slate-400">
+          Confirmed value counts accepted quotations only. It is billed value, not settled payment — no payment gateway
+          is connected yet.
+        </p>
+      </PortalPage>
     </HospitalLayout>
   );
 }
