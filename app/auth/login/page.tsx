@@ -7,6 +7,7 @@ import { SITE_NAME } from '@/lib/constants';
 import { portalPathForRole } from '@/lib/portal-routes';
 
 const LOGIN_2FA_STORAGE = 'tatavera_login_2fa';
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function LoginPage() {
   const router = useRouter();
@@ -21,14 +22,25 @@ export default function LoginPage() {
 
   const handlePasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setStatus('loading');
     setError('');
+
+    const trimmedEmail = email.trim();
+    if (!EMAIL_PATTERN.test(trimmedEmail)) {
+      setError('Enter a valid email address.');
+      return;
+    }
+    if (!password) {
+      setError('Enter your password.');
+      return;
+    }
+
+    setStatus('loading');
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: trimmedEmail, password }),
       });
       const data = await res.json();
       if (res.ok && data.requiresTwoFactor && data.pendingToken) {
@@ -73,8 +85,12 @@ export default function LoginPage() {
   };
 
   const handleSendOtp = async () => {
-    setStatus('loading');
     setError('');
+    if (phone.trim().replace(/[^\d]/g, '').length < 7) {
+      setError('Enter a valid phone number.');
+      return;
+    }
+    setStatus('loading');
     try {
       const res = await fetch('/api/auth/otp', {
         method: 'POST',
@@ -98,8 +114,12 @@ export default function LoginPage() {
 
   const handleOtpLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setStatus('loading');
     setError('');
+    if (!/^\d{6}$/.test(otp.trim())) {
+      setError('Enter the 6-digit code.');
+      return;
+    }
+    setStatus('loading');
     try {
       const res = await fetch('/api/auth/otp/verify', {
         method: 'POST',

@@ -10,7 +10,7 @@ import { useState } from 'react';
  * discards any Server Component payloads React has already cached for the
  * signed-in user.
  */
-export function LogoutButton({ className }: { className?: string }) {
+export function LogoutButton({ className, iconOnly }: { className?: string; iconOnly?: boolean }) {
   const [busy, setBusy] = useState(false);
 
   async function handleLogout() {
@@ -30,9 +30,12 @@ export function LogoutButton({ className }: { className?: string }) {
       type="button"
       onClick={handleLogout}
       disabled={busy}
+      aria-label="Log out"
+      title="Log out"
       className={className}
     >
-      <span aria-hidden="true">🚪</span> {busy ? 'Signing out…' : 'Log Out'}
+      <span aria-hidden="true">🚪</span>
+      {iconOnly ? <span className="sr-only">{busy ? 'Signing out…' : 'Log Out'}</span> : ` ${busy ? 'Signing out…' : 'Log Out'}`}
     </button>
   );
 }

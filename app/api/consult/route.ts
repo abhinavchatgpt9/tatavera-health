@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
+import { getAuthUser } from '@/lib/auth';
 
 const Schema = z.object({
   name: z.string().min(2).max(100),
@@ -40,8 +41,10 @@ export async function POST(req: NextRequest) {
       .filter(Boolean)
       .join(' | ');
 
+    const auth = getAuthUser(req);
     await prisma.enquiry.create({
       data: {
+        userId: auth?.role === 'PATIENT' ? auth.userId : undefined,
         name: d.name,
         email: d.email,
         phone: d.phone,

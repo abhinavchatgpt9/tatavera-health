@@ -3,7 +3,11 @@ import jwt, { type JwtPayload } from 'jsonwebtoken';
 import { NextRequest } from 'next/server';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'change-this-in-production';
-const JWT_EXPIRY = '7d';
+// Long-lived on purpose: sessions should stay active until the user
+// explicitly logs out, not expire silently mid-use. A JWT can't literally
+// never expire (no revocation without server-side session state), so 90
+// days is used as a practical "stays logged in" duration instead.
+const JWT_EXPIRY = '90d';
 const PENDING_JWT_EXPIRY = '10m';
 
 export type PendingPurpose = 'signup_verify' | '2fa_pending';

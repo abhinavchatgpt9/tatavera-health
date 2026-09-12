@@ -868,6 +868,7 @@ type Enquiry = {
   status: string;
   source: string | null;
   converted: boolean;
+  existingPatient: { id: string; name: string } | null;
   createdAt: string;
 };
 
@@ -885,7 +886,12 @@ const enquiryColumns: Array<Column<Enquiry>> = [
     header: 'Enquiry',
     render: (e) => (
       <>
-        <p className="font-medium text-slate-900 dark:text-white">{e.name}</p>
+        <div className="flex items-center gap-1.5">
+          <p className="font-medium text-slate-900 dark:text-white">{e.name}</p>
+          {e.existingPatient && (
+            <Pill className="bg-teal-100 text-teal-700">Existing patient</Pill>
+          )}
+        </div>
         <p className="text-xs text-slate-400 dark:text-slate-500">
           {e.country} · {e.email} · {e.phone}
         </p>

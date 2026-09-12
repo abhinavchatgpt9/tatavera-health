@@ -67,16 +67,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
           <span className="font-bold text-gray-900 text-sm">{SITE_NAME}</span>
         </Link>
-        <div className="flex gap-2 overflow-x-auto">
-          {NAV.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex-shrink-0 p-2 rounded-lg text-base ${pathname === item.href ? 'bg-blue-50 text-blue-600' : 'text-gray-500'}`}
-            >
-              {item.emoji}
-            </Link>
-          ))}
+        <div className="flex items-center gap-1 min-w-0">
+          <div className="flex gap-2 overflow-x-auto">
+            {NAV.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex-shrink-0 p-2 rounded-lg text-base ${pathname === item.href ? 'bg-blue-50 text-blue-600' : 'text-gray-500'}`}
+              >
+                {item.emoji}
+              </Link>
+            ))}
+          </div>
+          <LogoutButton iconOnly className="flex-shrink-0 p-2 rounded-lg text-base text-red-500" />
         </div>
       </div>
 

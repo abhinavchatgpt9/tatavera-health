@@ -1044,7 +1044,11 @@ export async function getAdminPayments() {
 
 export async function getAdminEnquiries() {
   const enquiries = await prisma.enquiry.findMany({
-    include: { treatment: { select: { name: true } }, lead: { select: { id: true } } },
+    include: {
+      treatment: { select: { name: true } },
+      lead: { select: { id: true } },
+      user: { select: { id: true, name: true } },
+    },
     orderBy: { createdAt: 'desc' },
     take: 200,
   });
@@ -1060,6 +1064,9 @@ export async function getAdminEnquiries() {
     status: e.status,
     source: e.source,
     converted: Boolean(e.lead),
+    // Set when this submission came from a logged-in Patient account, so
+    // admins can see it's tied to an existing user instead of an anonymous lead.
+    existingPatient: e.user ? { id: e.user.id, name: e.user.name } : null,
     createdAt: e.createdAt.toISOString(),
   }));
 }

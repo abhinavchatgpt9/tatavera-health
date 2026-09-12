@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 
 export const SESSION_COOKIE = 'token';
 
-/** Seven days, matching the JWT lifetime in lib/auth.ts. */
-const MAX_AGE_SECONDS = 7 * 24 * 60 * 60;
+/** 90 days, matching the JWT lifetime in lib/auth.ts — session persists until explicit logout. */
+const MAX_AGE_SECONDS = 90 * 24 * 60 * 60;
 
 /**
  * Attaches the session JWT to a response as an HttpOnly cookie.

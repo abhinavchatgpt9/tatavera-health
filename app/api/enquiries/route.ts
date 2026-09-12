@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
+import { getAuthUser } from '@/lib/auth';
 
 const EnquirySchema = z.object({
   name: z.string().min(2).max(100),
@@ -27,9 +28,11 @@ export async function POST(req: NextRequest) {
     const { name, email, phone, country, treatment, message } = parsed.data;
     const ip = req.headers.get('x-forwarded-for') || req.ip || 'unknown';
     const userAgent = req.headers.get('user-agent') || 'unknown';
+    const auth = getAuthUser(req);
 
     const enquiry = await prisma.enquiry.create({
       data: {
+        userId: auth?.role === 'PATIENT' ? auth.userId : undefined,
         name,
         email,
         phone,
