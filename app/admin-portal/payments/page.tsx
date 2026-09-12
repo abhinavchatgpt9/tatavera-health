@@ -1,50 +1,13 @@
 import type { Metadata } from 'next';
 
 import AdminLayout from '@/components/AdminLayout';
-import { PortalPage, PageHeader, StatGrid, Pill, formatMoney, formatDate } from '@/components/portal/PortalPage';
-import { DataTable, type Column } from '@/components/portal/DataTable';
+import { PortalPage, PageHeader, StatGrid, formatMoney } from '@/components/portal/PortalPage';
 import { getPortalSession } from '@/lib/portal-session';
 import { getAdminPayments } from '@/lib/portal-data';
+import { AdminPaymentsTable } from '@/components/portal/tables/admin';
 
 export const metadata: Metadata = { title: 'Payments | Admin Portal' };
 export const dynamic = 'force-dynamic';
-
-type Row = Awaited<ReturnType<typeof getAdminPayments>>['rows'][number];
-
-const columns: Array<Column<Row>> = [
-  {
-    key: 'patient',
-    header: 'Patient',
-    render: (r) => (
-      <>
-        <p className="font-medium text-slate-900 dark:text-white">{r.patient}</p>
-        <p className="text-xs text-slate-400 dark:text-slate-500">{r.country}</p>
-      </>
-    ),
-  },
-  { key: 'hospital', header: 'Hospital', render: (r) => <span className="text-slate-600 dark:text-slate-300">{r.hospital}</span> },
-  {
-    key: 'date',
-    header: 'Last updated',
-    hideOnMobile: true,
-    render: (r) => <span className="text-slate-500 dark:text-slate-400">{formatDate(r.date)}</span>,
-  },
-  {
-    key: 'status',
-    header: 'Status',
-    render: (r) => (
-      <Pill className={r.status === 'CONFIRMED' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}>
-        {r.status === 'CONFIRMED' ? 'Accepted' : 'Awaiting acceptance'}
-      </Pill>
-    ),
-  },
-  {
-    key: 'amount',
-    header: 'Amount',
-    align: 'right',
-    render: (r) => <span className="font-medium text-slate-900 dark:text-white">{formatMoney(r.amount, r.currency)}</span>,
-  },
-];
 
 export default async function AdminPaymentsPage() {
   await getPortalSession(['ADMIN']);
@@ -76,22 +39,7 @@ export default async function AdminPaymentsPage() {
           </p>
         </div>
 
-        <DataTable
-          rows={rows}
-          columns={columns}
-          searchIn={(r) => `${r.patient} ${r.country} ${r.hospital}`}
-          searchPlaceholder="Search by patient or hospital…"
-          filter={{
-            label: 'All statuses',
-            options: [
-              { value: 'CONFIRMED', label: 'Accepted' },
-              { value: 'AWAITING_ACCEPTANCE', label: 'Awaiting acceptance' },
-            ],
-            matches: (r, value) => r.status === value,
-          }}
-          emptyTitle="No billable quotations yet"
-          emptyDescription="Once hospitals send quotations and patients accept them, the value appears here."
-        />
+        <AdminPaymentsTable rows={rows} />
       </PortalPage>
     </AdminLayout>
   );

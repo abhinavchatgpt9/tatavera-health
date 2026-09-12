@@ -51,10 +51,6 @@ export default function LoginOtpPage() {
     }
   }, [router]);
 
-  const setAuthCookie = (token: string) => {
-    document.cookie = `token=${token}; path=/; max-age=${7 * 24 * 3600}; SameSite=Lax`;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!pendingToken) return;
@@ -64,12 +60,12 @@ export default function LoginOtpPage() {
       const res = await fetch('/api/auth/login/verify-2fa', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ pendingToken, otp }),
       });
       const data = await res.json();
-      if (res.ok && data.token) {
+      if (res.ok && data.success) {
         sessionStorage.removeItem(STORAGE_KEY);
-        setAuthCookie(data.token);
         router.push(portalPathForRole(data.user?.role));
         return;
       }

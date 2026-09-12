@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import LeadForm from '@/components/LeadForm';
-import { DESTINATIONS, FEATURED_HOSPITALS, FEATURED_DOCTORS, TESTIMONIALS } from '@/lib/constants';
+import { DESTINATIONS, FEATURED_HOSPITALS, TESTIMONIALS } from '@/lib/constants';
 
 type Props = { params: { slug: string } };
 

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { SITE_NAME } from '@/lib/constants';
+import { LogoutButton } from '@/components/LogoutButton';
 
 const NAV = [
   { label: 'Dashboard', href: '/doctor-portal', emoji: '🏠' },
@@ -51,15 +52,7 @@ export default function DoctorLayout({ children }: { children: React.ReactNode }
           <Link href="/" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-900 transition-colors">
             <span>🌐</span> Back to Website
           </Link>
-          <button
-            onClick={() => {
-              document.cookie = 'token=; path=/; max-age=0';
-              window.location.href = '/';
-            }}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 transition-colors mt-1"
-          >
-            <span>🚪</span> Log Out
-          </button>
+          <LogoutButton className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 transition-colors mt-1" />
         </div>
       </aside>
 

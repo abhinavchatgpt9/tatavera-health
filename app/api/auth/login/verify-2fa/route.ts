@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { OtpPurpose } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { signToken, verifyPendingToken } from '@/lib/auth';
+import { withSessionCookie } from '@/lib/session-cookie';
 
 const BodySchema = z.object({
   pendingToken: z.string().min(1),
@@ -63,11 +64,10 @@ export async function POST(req: NextRequest) {
 
     const token = signToken({ userId: user.id, role: user.role });
 
-    return NextResponse.json({
-      success: true,
-      token,
-      user: { id: user.id, name: user.name, email: user.email, role: user.role },
-    });
+    return withSessionCookie(
+      { success: true, user: { id: user.id, name: user.name, email: user.email, role: user.role } },
+      token
+    );
   } catch (error) {
     console.error('Login 2FA verify error:', error);
     return NextResponse.json({ success: false, message: 'Internal server error.' }, { status: 500 });

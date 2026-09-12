@@ -19,10 +19,6 @@ export default function LoginPage() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle');
   const [error, setError] = useState('');
 
-  const setAuthCookie = (token: string) => {
-    document.cookie = `token=${token}; path=/; max-age=${7 * 24 * 3600}; SameSite=Lax`;
-  };
-
   const handlePasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus('loading');
@@ -31,6 +27,7 @@ export default function LoginPage() {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
@@ -54,8 +51,7 @@ export default function LoginPage() {
         router.push('/auth/login/otp');
         return;
       }
-      if (res.ok && data.token) {
-        setAuthCookie(data.token);
+      if (res.ok && data.success) {
         setStatus('idle');
         router.push('/dashboard');
         return;
@@ -83,6 +79,7 @@ export default function LoginPage() {
       const res = await fetch('/api/auth/otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ phone }),
       });
       const data = await res.json();
@@ -107,11 +104,11 @@ export default function LoginPage() {
       const res = await fetch('/api/auth/otp/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ phone, otp }),
       });
       const data = await res.json();
       if (res.ok) {
-        setAuthCookie(data.token);
         router.push(portalPathForRole(data.user?.role));
       } else {
         setError(data.message || 'Invalid OTP');

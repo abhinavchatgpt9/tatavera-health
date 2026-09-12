@@ -30,15 +30,6 @@ function parseCostRange(raw: string): [number, number] {
   return [numbers[0], numbers[1]];
 }
 
-function slugify(input: string): string {
-  return input
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
-
 /**
  * Free-text procedure names differ between sources — a hospital lists
  * "Coronary Bypass (CABG)" while the catalogue calls it "Coronary Artery

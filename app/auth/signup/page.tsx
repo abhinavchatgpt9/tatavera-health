@@ -16,10 +16,6 @@ export default function SignupPage() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [error, setError] = useState('');
 
-  const setAuthCookie = (token: string) => {
-    document.cookie = `token=${token}; path=/; max-age=${7 * 24 * 3600}; SameSite=Lax`;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus('loading');
@@ -28,6 +24,7 @@ export default function SignupPage() {
       const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(form),
       });
       const data = await res.json();
@@ -38,8 +35,7 @@ export default function SignupPage() {
         setStatus('idle');
         return;
       }
-      if (res.ok && data.token) {
-        setAuthCookie(data.token);
+      if (res.ok && data.success) {
         router.push('/dashboard');
         return;
       }
@@ -60,11 +56,11 @@ export default function SignupPage() {
       const res = await fetch('/api/auth/signup/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ pendingToken, otp: verifyOtp }),
       });
       const data = await res.json();
-      if (res.ok && data.token) {
-        setAuthCookie(data.token);
+      if (res.ok && data.success) {
         router.push('/dashboard');
         return;
       }

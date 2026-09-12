@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { OtpPurpose } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { signToken, verifyPendingToken } from '@/lib/auth';
+import { withSessionCookie } from '@/lib/session-cookie';
 
 const BodySchema = z.object({
   pendingToken: z.string().min(1),
@@ -36,12 +37,14 @@ export async function POST(req: NextRequest) {
 
     if (user.emailVerified) {
       const token = signToken({ userId: user.id, role: user.role });
-      return NextResponse.json({
-        success: true,
-        message: 'Already verified.',
-        token,
-        user: { id: user.id, name: user.name, email: user.email, role: user.role },
-      });
+      return withSessionCookie(
+        {
+          success: true,
+          message: 'Already verified.',
+          user: { id: user.id, name: user.name, email: user.email, role: user.role },
+        },
+        token
+      );
     }
 
     const otpRecord = await prisma.otpToken.findFirst({
@@ -73,12 +76,14 @@ export async function POST(req: NextRequest) {
     const updated = await prisma.user.findUniqueOrThrow({ where: { id: user.id } });
     const token = signToken({ userId: updated.id, role: updated.role });
 
-    return NextResponse.json({
-      success: true,
-      message: 'Email verified. Welcome!',
-      token,
-      user: { id: updated.id, name: updated.name, email: updated.email, role: updated.role },
-    });
+    return withSessionCookie(
+      {
+        success: true,
+        message: 'Email verified. Welcome!',
+        user: { id: updated.id, name: updated.name, email: updated.email, role: updated.role },
+      },
+      token
+    );
   } catch (error) {
     console.error('Signup verify error:', error);
     return NextResponse.json({ success: false, message: 'Internal server error.' }, { status: 500 });

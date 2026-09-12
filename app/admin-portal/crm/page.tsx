@@ -1,71 +1,14 @@
 import type { Metadata } from 'next';
 
 import AdminLayout from '@/components/AdminLayout';
-import { PortalPage, PageHeader, Panel, PanelEmpty, Pill, formatMoney, formatDate } from '@/components/portal/PortalPage';
-import { DataTable, type Column } from '@/components/portal/DataTable';
+import { PortalPage, PageHeader, Panel, PanelEmpty, formatMoney } from '@/components/portal/PortalPage';
 import { getPortalSession } from '@/lib/portal-session';
 import { getAdminCrmFunnel, getAdminLeads } from '@/lib/portal-data';
 import { LEAD_STAGE_LABELS, LEAD_STAGE_COLORS } from '@/lib/lead-stage';
+import { AdminLeadsTable } from '@/components/portal/tables/admin';
 
 export const metadata: Metadata = { title: 'CRM | Admin Portal' };
 export const dynamic = 'force-dynamic';
-
-type Lead = Awaited<ReturnType<typeof getAdminLeads>>[number];
-
-const STAGE_ORDER = [
-  'LEAD_CREATED', 'LEAD_ASSIGNED', 'LEAD_CONTACTED', 'REPORTS_UPLOADED',
-  'HOSPITAL_MATCHED', 'QUOTATION_RECEIVED', 'VIDEO_CONSULTATION',
-  'TREATMENT_CONFIRMED', 'VISA_PROCESSING', 'TRAVEL_ARRANGED',
-  'TREATMENT_COMPLETED', 'FOLLOW_UP',
-];
-
-const columns: Array<Column<Lead>> = [
-  {
-    key: 'patient',
-    header: 'Patient',
-    render: (l) => (
-      <>
-        <p className="font-medium text-slate-900 dark:text-white">{l.name}</p>
-        <p className="text-xs text-slate-400 dark:text-slate-500">
-          {l.country} · {l.email}
-        </p>
-      </>
-    ),
-  },
-  { key: 'treatment', header: 'Treatment', render: (l) => <span className="text-slate-600 dark:text-slate-300">{l.treatment}</span> },
-  {
-    key: 'stage',
-    header: 'Stage',
-    render: (l) => (
-      <Pill className={LEAD_STAGE_COLORS[l.stage] ?? 'bg-slate-100 text-slate-700'}>
-        {LEAD_STAGE_LABELS[l.stage] ?? l.stage}
-      </Pill>
-    ),
-  },
-  {
-    key: 'owner',
-    header: 'Owner',
-    hideOnMobile: true,
-    render: (l) => (
-      <>
-        <p className="text-slate-600 dark:text-slate-300">{l.assignee}</p>
-        <p className="text-xs text-slate-400 dark:text-slate-500">{l.hospital}</p>
-      </>
-    ),
-  },
-  {
-    key: 'created',
-    header: 'Created',
-    hideOnMobile: true,
-    render: (l) => <span className="text-slate-500 dark:text-slate-400">{formatDate(l.createdAt)}</span>,
-  },
-  {
-    key: 'value',
-    header: 'Value',
-    align: 'right',
-    render: (l) => <span className="font-medium text-slate-900 dark:text-white">{formatMoney(l.value, l.currency)}</span>,
-  },
-];
 
 export default async function AdminCrmPage() {
   await getPortalSession(['ADMIN']);
@@ -116,19 +59,7 @@ export default async function AdminCrmPage() {
           </Panel>
         </div>
 
-        <DataTable
-          rows={leads}
-          columns={columns}
-          searchIn={(l) => `${l.name} ${l.email} ${l.country} ${l.treatment} ${l.assignee}`}
-          searchPlaceholder="Search leads by patient, country, treatment or owner…"
-          filter={{
-            label: 'All stages',
-            options: STAGE_ORDER.map((s) => ({ value: s, label: LEAD_STAGE_LABELS[s] ?? s })),
-            matches: (l, value) => l.stage === value,
-          }}
-          emptyTitle="No leads yet"
-          emptyDescription="Enquiries from the public site become leads once a case manager converts them."
-        />
+        <AdminLeadsTable rows={leads} />
       </PortalPage>
     </AdminLayout>
   );
