@@ -1,0 +1,25 @@
+# Free local PostgreSQL for development (Docker Desktop).
+# Start: docker compose up -d
+# Connection: postgresql://tatavera_user:tatavera_dev@localhost:5432/tatavera_health
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: tatavera-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: tatavera_user
+      POSTGRES_PASSWORD: tatavera_dev
+      POSTGRES_DB: tatavera_health
+    ports:
+      - '5432:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U tatavera_user -d tatavera_health']
+      interval: 3s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    volumes:
+      - tatavera_pg_data:/var/lib/postgresql/data
+
+volumes:
+  tatavera_pg_data:

@@ -1,0 +1,92 @@
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { SITE_NAME } from '@/lib/constants';
+
+const NAV = [
+  { label: 'Dashboard', href: '/case-manager-portal', emoji: '🏠' },
+  { label: 'Assigned Leads', href: '/case-manager-portal/leads', emoji: '📋' },
+  { label: 'Case Timeline', href: '/case-manager-portal/timeline', emoji: '🕒' },
+  { label: 'Tasks', href: '/case-manager-portal/tasks', emoji: '✅' },
+  { label: 'Notes', href: '/case-manager-portal/notes', emoji: '📝' },
+  { label: 'Communication', href: '/case-manager-portal/communication', emoji: '💬' },
+  { label: 'Follow Ups', href: '/case-manager-portal/follow-ups', emoji: '🔁' },
+  { label: 'Travel Status', href: '/case-manager-portal/travel', emoji: '✈️' },
+  { label: 'Visa Status', href: '/case-manager-portal/visa', emoji: '🛂' },
+  { label: 'Report Review', href: '/case-manager-portal/reports', emoji: '📄' },
+  { label: 'Quotation Comparison', href: '/case-manager-portal/quotations', emoji: '💰' },
+];
+
+export default function CaseManagerLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex">
+      <aside className="hidden md:flex flex-col w-64 bg-white border-r border-gray-100 fixed inset-y-0 overflow-y-auto">
+        <div className="px-5 py-5 border-b border-gray-100">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">T</span>
+            </div>
+            <span className="font-bold text-gray-900 text-sm">{SITE_NAME}</span>
+          </Link>
+          <p className="text-xs text-gray-400 mt-1">Case Manager Portal</p>
+        </div>
+
+        <nav className="flex-1 px-3 py-4 space-y-1">
+          {NAV.map((item) => {
+            const active = pathname === item.href;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${active ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
+              >
+                <span className="text-lg">{item.emoji}</span>
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="px-3 py-4 border-t border-gray-100">
+          <Link href="/" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+            <span>🌐</span> Back to Website
+          </Link>
+          <button
+            onClick={() => {
+              document.cookie = 'token=; path=/; max-age=0';
+              window.location.href = '/';
+            }}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 transition-colors mt-1"
+          >
+            <span>🚪</span> Log Out
+          </button>
+        </div>
+      </aside>
+
+      <div className="md:hidden fixed top-0 inset-x-0 z-40 bg-white border-b border-gray-100 px-4 h-14 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-2">
+          <div className="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-xs">T</span>
+          </div>
+          <span className="font-bold text-gray-900 text-sm">Case Manager</span>
+        </Link>
+        <div className="flex gap-1.5 overflow-x-auto">
+          {NAV.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`flex-shrink-0 p-2 rounded-lg text-base ${pathname === item.href ? 'bg-blue-50 text-blue-600' : 'text-gray-500'}`}
+            >
+              {item.emoji}
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      <main className="flex-1 md:ml-64 pt-14 md:pt-0 min-h-screen">{children}</main>
+    </div>
+  );
+}

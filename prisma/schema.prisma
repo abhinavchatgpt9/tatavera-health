@@ -1,0 +1,817 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  // Pooled connection (PgBouncer on Supabase, port 6543) — used at runtime.
+  url       = env("DATABASE_URL")
+  // Direct connection (port 5432) — used by `prisma migrate` / `db push`,
+  // which cannot run through a transaction pooler.
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── ENUMS ────────────────────────────────────────────────────────────────────
+
+enum Role {
+  PATIENT
+  DOCTOR
+  HOSPITAL_ADMIN
+  CASE_MANAGER
+  ADMIN
+  PARTNER
+}
+
+enum LeadStage {
+  LEAD_CREATED
+  LEAD_ASSIGNED
+  LEAD_CONTACTED
+  REPORTS_UPLOADED
+  HOSPITAL_MATCHED
+  QUOTATION_RECEIVED
+  VIDEO_CONSULTATION
+  TREATMENT_CONFIRMED
+  VISA_PROCESSING
+  TRAVEL_ARRANGED
+  TREATMENT_COMPLETED
+  FOLLOW_UP
+}
+
+enum QuotationStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  DECLINED
+  EXPIRED
+}
+
+enum VisaStatusStage {
+  NOT_STARTED
+  DOCUMENTS_PENDING
+  SUBMITTED
+  INTERVIEW_SCHEDULED
+  APPROVED
+  REJECTED
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  DONE
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum CaseStatus {
+  ENQUIRY_SUBMITTED
+  CASE_ASSIGNED
+  CONSULTATION_SCHEDULED
+  TRAVEL_PLANNED
+  TREATMENT
+  RECOVERY
+  FOLLOW_UP
+  COMPLETED
+}
+
+enum AppointmentType {
+  VIDEO
+  IN_PERSON
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+enum ReportCategory {
+  BLOOD_REPORTS
+  IMAGING
+  PRESCRIPTIONS
+  OTHER
+}
+
+enum EnquiryStatus {
+  NEW
+  CONTACTED
+  IN_PROGRESS
+  CONVERTED
+  CLOSED
+}
+
+enum OtpPurpose {
+  PHONE_LOGIN
+  EMAIL_SIGNUP_VERIFY
+  EMAIL_TWO_FACTOR
+}
+
+enum PartnerType {
+  REFERRING_DOCTOR
+  TRAVEL_AGENT
+  FACILITATOR
+  OTHER
+}
+
+// ─── CORE USER ────────────────────────────────────────────────────────────────
+
+model User {
+  id               String    @id @default(cuid())
+  name             String
+  email            String    @unique
+  emailVerified    DateTime?
+  phone            String?   @unique
+  phoneVerified    DateTime?
+  passwordHash     String?
+  role             Role      @default(PATIENT)
+  country          String?
+  language         String    @default("en")
+  avatarUrl        String?
+  emergencyContact String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  otpTokens     OtpToken[]
+  patientCase   PatientCase?
+  reports       Report[]
+  appointments  Appointment[]
+  messages      Message[]
+  reviews       Review[]
+  enquiries     Enquiry[]
+  doctorProfileId   String?      @unique
+  doctorProfile     Doctor?      @relation(fields: [doctorProfileId], references: [id])
+  hospitalStaff     HospitalStaff?
+  caseManagerProfileId String?   @unique
+  caseManagerProfile   CaseManager? @relation(fields: [caseManagerProfileId], references: [id])
+  assignedLeads     Lead[]       @relation("LeadAssignee")
+  leadNotes         LeadNote[]
+  leadTasks         LeadTask[]   @relation("TaskAssignee")
+  auditLogs         AuditLog[]
+
+  @@index([email])
+  @@index([phone])
+}
+
+model OtpToken {
+  id        String     @id @default(cuid())
+  userId    String
+  token     String
+  purpose   OtpPurpose @default(PHONE_LOGIN)
+  expiresAt DateTime
+  used      Boolean    @default(false)
+  createdAt DateTime   @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, purpose])
+}
+
+// ─── PATIENT CASE ─────────────────────────────────────────────────────────────
+
+model PatientCase {
+  id             String     @id @default(cuid())
+  userId         String     @unique
+  caseManagerId  String?
+  status         CaseStatus @default(ENQUIRY_SUBMITTED)
+  treatmentId    String?
+  hospitalId     String?
+  doctorId       String?
+  notes          String?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  caseManager CaseManager? @relation(fields: [caseManagerId], references: [id])
+  treatment   Treatment?   @relation(fields: [treatmentId], references: [id])
+  hospital    Hospital?    @relation(fields: [hospitalId], references: [id])
+  doctor      Doctor?      @relation(fields: [doctorId], references: [id])
+  appointments Appointment[]
+  messages    Message[]
+  opinions    MedicalOpinion[]
+  lead        Lead?
+
+  @@index([userId])
+  @@index([status])
+}
+
+// ─── CASE MANAGER ─────────────────────────────────────────────────────────────
+
+model CaseManager {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  phone        String
+  whatsapp     String?
+  photoUrl     String?
+  languages    String[]
+  createdAt    DateTime @default(now())
+
+  cases PatientCase[]
+  user  User?
+  leads Lead[]
+}
+
+// ─── TREATMENT ────────────────────────────────────────────────────────────────
+
+model Treatment {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  name            String
+  specialty       String
+  description     String
+  content         String   @db.Text
+  costFrom        Int?
+  costTo          Int?
+  currency        String   @default("USD")
+  duration        String?
+  hospitalStay    String?
+  recoveryTime    String?
+  imageUrl        String?
+  metaTitle       String?
+  metaDescription String?
+  published       Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  faqs          TreatmentFaq[]
+  hospitals     HospitalTreatment[]
+  doctors       DoctorTreatment[]
+  patientCases  PatientCase[]
+  enquiries     Enquiry[]
+  testimonials  Testimonial[]
+
+  @@index([slug])
+  @@index([specialty])
+}
+
+model TreatmentFaq {
+  id          String    @id @default(cuid())
+  treatmentId String
+  question    String
+  answer      String    @db.Text
+  order       Int       @default(0)
+
+  treatment Treatment @relation(fields: [treatmentId], references: [id], onDelete: Cascade)
+}
+
+// ─── HOSPITAL ─────────────────────────────────────────────────────────────────
+
+model Hospital {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  name            String
+  city            String
+  country         String
+  address         String?
+  phone           String?
+  email           String?
+  website         String?
+  description     String   @db.Text
+  logoUrl         String?
+  coverImageUrl   String?
+  galleryUrls     String[]
+  accreditations  String[]
+  specialties     String[]
+  bedsCount       Int?
+  foundedYear     Int?
+  latitude        Float?
+  longitude       Float?
+  metaTitle       String?
+  metaDescription String?
+  rating          Float    @default(0)
+  reviewCount     Int      @default(0)
+  published       Boolean  @default(true)
+  featured        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  doctors       DoctorHospital[]
+  treatments    HospitalTreatment[]
+  reviews       Review[]
+  patientCases  PatientCase[]
+  costItems     HospitalCostItem[]
+  staff         HospitalStaff[]
+  departments   Department[]
+  quotations    Quotation[]
+  leads         Lead[]
+
+  @@index([slug])
+  @@index([country])
+}
+
+// ─── HOSPITAL STAFF / DEPARTMENTS ─────────────────────────────────────────────
+
+model HospitalStaff {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  hospitalId String
+  title      String   @default("Hospital Admin")
+  createdAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hospital Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+
+  @@index([hospitalId])
+}
+
+model Department {
+  id          String   @id @default(cuid())
+  hospitalId  String
+  name        String
+  description String?  @db.Text
+  headDoctor  String?
+  createdAt   DateTime @default(now())
+
+  hospital Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+
+  @@index([hospitalId])
+}
+
+model HospitalTreatment {
+  hospitalId  String
+  treatmentId String
+  costFrom    Int?
+  costTo      Int?
+
+  hospital  Hospital  @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  treatment Treatment @relation(fields: [treatmentId], references: [id], onDelete: Cascade)
+
+  @@id([hospitalId, treatmentId])
+}
+
+model HospitalCostItem {
+  id         String  @id @default(cuid())
+  hospitalId String
+  procedure  String
+  costFrom   Int
+  costTo     Int
+  currency   String  @default("USD")
+
+  hospital Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+}
+
+// ─── DOCTOR ───────────────────────────────────────────────────────────────────
+
+model Doctor {
+  id                String   @id @default(cuid())
+  slug              String   @unique
+  name              String
+  designation       String
+  specialty         String
+  subSpecialties    String[]
+  experience        Int
+  photoUrl          String?
+  about             String   @db.Text
+  qualifications    String[]
+  certifications    String[]
+  publications      String[]
+  achievements      String[]
+  languages         String[]
+  metaTitle         String?
+  metaDescription   String?
+  rating            Float    @default(0)
+  reviewCount       Int      @default(0)
+  published         Boolean  @default(true)
+  featured          Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  hospitals     DoctorHospital[]
+  treatments    DoctorTreatment[]
+  reviews       Review[]
+  patientCases  PatientCase[]
+  appointments  Appointment[]
+  user          User?
+  availability  DoctorAvailability[]
+  opinions      MedicalOpinion[]
+
+  @@index([slug])
+  @@index([specialty])
+}
+
+// ─── DOCTOR AVAILABILITY ──────────────────────────────────────────────────────
+
+model DoctorAvailability {
+  id        String   @id @default(cuid())
+  doctorId  String
+  dayOfWeek Int // 0=Sunday .. 6=Saturday
+  startTime String // "09:00"
+  endTime   String // "17:00"
+  slotMins  Int      @default(30)
+  active    Boolean  @default(true)
+
+  doctor Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@index([doctorId])
+}
+
+// ─── MEDICAL OPINION (Doctor second-opinion / case review) ───────────────────
+
+model MedicalOpinion {
+  id          String   @id @default(cuid())
+  doctorId    String
+  caseId      String
+  summary     String   @db.Text
+  recommendation String @db.Text
+  attachments String[]
+  createdAt   DateTime @default(now())
+
+  doctor Doctor      @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  case   PatientCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@index([doctorId])
+  @@index([caseId])
+}
+
+model DoctorHospital {
+  doctorId   String
+  hospitalId String
+
+  doctor   Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  hospital Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+
+  @@id([doctorId, hospitalId])
+}
+
+model DoctorTreatment {
+  doctorId    String
+  treatmentId String
+
+  doctor    Doctor    @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  treatment Treatment @relation(fields: [treatmentId], references: [id], onDelete: Cascade)
+
+  @@id([doctorId, treatmentId])
+}
+
+// ─── DESTINATION ──────────────────────────────────────────────────────────────
+
+model Destination {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  country         String
+  countryCode     String
+  imageUrl        String?
+  description     String   @db.Text
+  content         String   @db.Text
+  topSpecialties  String[]
+  visaInfo        String?  @db.Text
+  travelTips      String?  @db.Text
+  accommodation   String?  @db.Text
+  metaTitle       String?
+  metaDescription String?
+  published       Boolean  @default(true)
+  featured        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  @@index([slug])
+}
+
+// ─── REVIEW ───────────────────────────────────────────────────────────────────
+
+model Review {
+  id         String   @id @default(cuid())
+  userId     String
+  hospitalId String?
+  doctorId   String?
+  rating     Int
+  title      String?
+  body       String   @db.Text
+  treatment  String?
+  verified   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hospital Hospital? @relation(fields: [hospitalId], references: [id])
+  doctor   Doctor?   @relation(fields: [doctorId], references: [id])
+
+  @@index([hospitalId])
+  @@index([doctorId])
+}
+
+// ─── TESTIMONIAL ──────────────────────────────────────────────────────────────
+
+model Testimonial {
+  id           String   @id @default(cuid())
+  patientName  String
+  patientCountry String
+  treatmentId  String?
+  videoUrl     String?
+  photoUrl     String?
+  quote        String   @db.Text
+  rating       Int      @default(5)
+  featured     Boolean  @default(false)
+  published    Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  treatment Treatment? @relation(fields: [treatmentId], references: [id])
+
+  @@index([treatmentId])
+}
+
+// ─── REPORT (Patient Medical Files) ──────────────────────────────────────────
+
+model Report {
+  id           String         @id @default(cuid())
+  userId       String
+  fileName     String
+  fileKey      String
+  fileUrl      String
+  fileSize     Int
+  mimeType     String
+  category     ReportCategory @default(OTHER)
+  shareToken   String?        @unique
+  shareExpires DateTime?
+  createdAt    DateTime       @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ─── APPOINTMENT ──────────────────────────────────────────────────────────────
+
+model Appointment {
+  id          String            @id @default(cuid())
+  userId      String
+  doctorId    String?
+  caseId      String?
+  type        AppointmentType   @default(VIDEO)
+  status      AppointmentStatus @default(SCHEDULED)
+  scheduledAt DateTime
+  duration    Int               @default(30)
+  notes       String?
+  meetLink    String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  user   User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  doctor Doctor?      @relation(fields: [doctorId], references: [id])
+  case   PatientCase? @relation(fields: [caseId], references: [id])
+
+  @@index([userId])
+  @@index([doctorId])
+}
+
+// ─── MESSAGE ──────────────────────────────────────────────────────────────────
+
+model Message {
+  id        String   @id @default(cuid())
+  caseId    String
+  senderId  String
+  body      String   @db.Text
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  case   PatientCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  sender User        @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([caseId])
+}
+
+// ─── ENQUIRY / LEAD ───────────────────────────────────────────────────────────
+
+model Enquiry {
+  id          String        @id @default(cuid())
+  userId      String?
+  name        String
+  email       String
+  phone       String
+  country     String
+  treatmentId String?
+  message     String?       @db.Text
+  status      EnquiryStatus @default(NEW)
+  source      String?
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  user      User?      @relation(fields: [userId], references: [id])
+  treatment Treatment? @relation(fields: [treatmentId], references: [id])
+  lead      Lead?
+
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// ─── BLOG ─────────────────────────────────────────────────────────────────────
+
+model BlogPost {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  title           String
+  excerpt         String
+  content         String   @db.Text
+  coverImageUrl   String?
+  category        String
+  tags            String[]
+  authorName      String
+  authorAvatarUrl String?
+  readTime        Int      @default(5)
+  metaTitle       String?
+  metaDescription String?
+  published       Boolean  @default(false)
+  publishedAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([slug])
+  @@index([category])
+  @@index([publishedAt])
+}
+
+// ─── PARTNER PORTAL ───────────────────────────────────────────────────────────
+
+model Partner {
+  id          String      @id @default(cuid())
+  name        String
+  email       String      @unique
+  phone       String
+  company     String?
+  type        PartnerType
+  country     String
+  approved    Boolean     @default(false)
+  commissionPct Float     @default(0)
+  createdAt   DateTime    @default(now())
+
+  referrals PartnerReferral[]
+}
+
+model PartnerReferral {
+  id          String     @id @default(cuid())
+  partnerId   String
+  patientName String
+  patientEmail String
+  treatment   String
+  status      CaseStatus @default(ENQUIRY_SUBMITTED)
+  commission  Float?
+  paid        Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@index([partnerId])
+}
+
+// ─── CRM / LEAD LIFECYCLE ──────────────────────────────────────────────────────
+
+model Lead {
+  id             String    @id @default(cuid())
+  enquiryId      String?   @unique
+  caseId         String?   @unique
+  name           String
+  email          String
+  phone          String
+  country        String
+  treatmentName  String?
+  stage          LeadStage @default(LEAD_CREATED)
+  assigneeId     String?
+  caseManagerId  String?
+  hospitalId     String?
+  source         String?
+  value          Int?
+  currency       String    @default("USD")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  enquiry     Enquiry?     @relation(fields: [enquiryId], references: [id])
+  case        PatientCase? @relation(fields: [caseId], references: [id])
+  assignee    User?        @relation("LeadAssignee", fields: [assigneeId], references: [id])
+  caseManager CaseManager? @relation(fields: [caseManagerId], references: [id])
+  hospital    Hospital?    @relation(fields: [hospitalId], references: [id])
+  notes       LeadNote[]
+  tasks       LeadTask[]
+  quotations  Quotation[]
+  visaStatus  VisaStatus?
+  travelStatus TravelStatus?
+  stageHistory LeadStageEvent[]
+
+  @@index([stage])
+  @@index([assigneeId])
+  @@index([caseManagerId])
+}
+
+model LeadStageEvent {
+  id        String    @id @default(cuid())
+  leadId    String
+  stage     LeadStage
+  note      String?
+  createdAt DateTime  @default(now())
+
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+}
+
+model LeadNote {
+  id        String   @id @default(cuid())
+  leadId    String
+  authorId  String
+  body      String   @db.Text
+  createdAt DateTime @default(now())
+
+  lead   Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+}
+
+model LeadTask {
+  id          String       @id @default(cuid())
+  leadId      String
+  assigneeId  String?
+  title       String
+  dueAt       DateTime?
+  status      TaskStatus   @default(PENDING)
+  priority    TaskPriority @default(MEDIUM)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  lead     Lead  @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  assignee User? @relation("TaskAssignee", fields: [assigneeId], references: [id])
+
+  @@index([leadId])
+  @@index([assigneeId])
+}
+
+model Quotation {
+  id          String          @id @default(cuid())
+  leadId      String
+  hospitalId  String
+  status      QuotationStatus @default(DRAFT)
+  currency    String          @default("USD")
+  totalAmount Int
+  validUntil  DateTime?
+  notes       String?         @db.Text
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  lead     Lead            @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  hospital Hospital        @relation(fields: [hospitalId], references: [id])
+  items    QuotationItem[]
+
+  @@index([leadId])
+  @@index([hospitalId])
+}
+
+model QuotationItem {
+  id          String    @id @default(cuid())
+  quotationId String
+  description String
+  amount      Int
+
+  quotation Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+}
+
+model VisaStatus {
+  id         String          @id @default(cuid())
+  leadId     String          @unique
+  stage      VisaStatusStage @default(NOT_STARTED)
+  country    String?
+  documents  String[]
+  notes      String?         @db.Text
+  updatedAt  DateTime        @updatedAt
+
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+}
+
+model TravelStatus {
+  id           String   @id @default(cuid())
+  leadId       String   @unique
+  arrivalDate  DateTime?
+  departureDate DateTime?
+  flightDetails String? @db.Text
+  accommodation String?
+  pickupArranged Boolean @default(false)
+  notes        String?  @db.Text
+  updatedAt    DateTime @updatedAt
+
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+}
+
+// ─── AUDIT LOG ──────────────────────────────────────────────────────────────
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  action     String
+  entityType String?
+  entityId   String?
+  metadata   Json?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
