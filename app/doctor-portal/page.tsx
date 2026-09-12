@@ -1,130 +1,165 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
+
 import DoctorLayout from '@/components/DoctorLayout';
+import { PortalPage, PageHeader, StatGrid, Panel, PanelEmpty, Pill, formatDate, formatDateTime } from '@/components/portal/PortalPage';
+import { getPortalSession } from '@/lib/portal-session';
 import {
-  MOCK_DOCTOR,
-  MOCK_DOCTOR_PATIENTS,
-  MOCK_DOCTOR_APPOINTMENTS,
-  MOCK_DOCTOR_OPINIONS,
-} from '@/lib/portal-mock-data';
+  getDoctorProfile,
+  getDoctorPatients,
+  getDoctorAppointments,
+  getDoctorDashboardStats,
+} from '@/lib/portal-data';
+import { CASE_STATUS_LABELS, CASE_STATUS_COLORS, APPOINTMENT_STATUS_COLORS } from '@/lib/lead-stage';
 
 export const metadata: Metadata = { title: 'Doctor Dashboard | Tatavera Health' };
+export const dynamic = 'force-dynamic';
 
-export default function DoctorDashboard() {
-  const today = '2026-07-13';
-  const todaysAppointments = MOCK_DOCTOR_APPOINTMENTS.filter((a) => a.scheduledAt.startsWith(today));
+function isToday(iso: string): boolean {
+  const date = new Date(iso);
+  const now = new Date();
+  return (
+    date.getFullYear() === now.getFullYear() &&
+    date.getMonth() === now.getMonth() &&
+    date.getDate() === now.getDate()
+  );
+}
 
-  const firstName = MOCK_DOCTOR.name.replace(/^Dr\.\s*/, '').split(' ')[0];
+export default async function DoctorDashboard() {
+  const session = await getPortalSession(['DOCTOR', 'ADMIN']);
+
+  const [profile, patients, appointments, stats] = await Promise.all([
+    getDoctorProfile(session),
+    getDoctorPatients(session),
+    getDoctorAppointments(session, { upcomingOnly: true }),
+    getDoctorDashboardStats(session),
+  ]);
+
+  // An ADMIN can open this portal for oversight, and a DOCTOR account may not
+  // have been linked to a Doctor profile yet — say so rather than rendering
+  // zeroes that look like a broken page.
+  if (!profile) {
+    return (
+      <DoctorLayout>
+        <PortalPage>
+          <PageHeader title="No doctor profile linked" />
+          <Panel title="What this means">
+            <p className="text-sm text-slate-600 dark:text-slate-300">
+              This account has the {session.role === 'ADMIN' ? 'ADMIN' : 'DOCTOR'} role but is not linked to a doctor
+              record, so there is no schedule or patient list to show. An administrator can link it from{' '}
+              <Link href="/admin-portal/doctors" className="font-medium text-blue-600 hover:underline dark:text-blue-400">
+                Admin → Doctors
+              </Link>
+              .
+            </p>
+          </Panel>
+        </PortalPage>
+      </DoctorLayout>
+    );
+  }
+
+  const todaysAppointments = appointments.filter((a) => isToday(a.scheduledAt));
+  const firstName = profile.name.replace(/^Dr\.\s*/, '').split(' ')[0];
 
   return (
     <DoctorLayout>
-      <div className="p-6 lg:p-10 max-w-6xl">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Welcome back, Dr. {firstName} 👋</h1>
-          <p className="text-gray-500 mt-1">Here&apos;s your schedule and patient overview for today.</p>
-        </div>
+      <PortalPage>
+        <PageHeader
+          title={`Welcome back, Dr. ${firstName}`}
+          description="Your schedule and patient overview."
+        />
 
-        {/* Stat cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {[
+        <StatGrid
+          stats={[
             { label: "Today's Appointments", value: todaysAppointments.length, emoji: '📅' },
-            { label: 'Total Patients', value: MOCK_DOCTOR_PATIENTS.length, emoji: '🧑‍🤝‍🧑' },
-            { label: 'Pending Opinions', value: MOCK_DOCTOR_OPINIONS.length, emoji: '🩺' },
-            { label: 'Avg. Rating', value: MOCK_DOCTOR.rating.toFixed(1), emoji: '⭐' },
-          ].map((stat) => (
-            <div key={stat.label} className="bg-white border border-gray-100 rounded-2xl p-5">
-              <div className="text-2xl mb-2">{stat.emoji}</div>
-              <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-              <p className="text-xs text-gray-500 mt-1">{stat.label}</p>
-            </div>
-          ))}
-        </div>
+            { label: 'Total Patients', value: stats.totalPatients, emoji: '🧑‍🤝‍🧑' },
+            { label: 'Opinions Given', value: stats.opinionsGiven, emoji: '🩺' },
+            { label: 'Avg. Rating', value: profile.rating.toFixed(1), emoji: '⭐', hint: `${profile.reviewCount} reviews` },
+          ]}
+        />
 
-        <div className="grid md:grid-cols-2 gap-6 mb-6">
-          {/* Doctor info card */}
-          <div className="bg-white border border-gray-100 rounded-2xl p-6">
-            <h2 className="font-bold text-gray-900 mb-4">My Profile</h2>
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center text-2xl flex-shrink-0">
+        <div className="mb-6 grid gap-6 md:grid-cols-2">
+          <Panel title="My Profile" actions={<Link href="/doctor-portal/profile" className="text-xs font-semibold text-blue-600 hover:underline dark:text-blue-400">Edit</Link>}>
+            <div className="mb-4 flex items-center gap-4">
+              <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 text-2xl dark:bg-blue-900/40" aria-hidden="true">
                 🩺
               </div>
-              <div>
-                <p className="font-semibold text-gray-900">{MOCK_DOCTOR.name}</p>
-                <p className="text-sm text-gray-500">{MOCK_DOCTOR.designation}</p>
+              <div className="min-w-0">
+                <p className="truncate font-semibold text-slate-900 dark:text-white">{profile.name}</p>
+                <p className="truncate text-sm text-slate-500 dark:text-slate-400">{profile.designation}</p>
               </div>
             </div>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-400">Specialty</span>
-                <span className="font-medium text-gray-900">{MOCK_DOCTOR.specialty}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-400">Hospital</span>
-                <span className="font-medium text-gray-900">{MOCK_DOCTOR.hospital}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-400">Rating</span>
-                <span className="font-medium text-gray-900">⭐ {MOCK_DOCTOR.rating} ({MOCK_DOCTOR.reviewCount} reviews)</span>
-              </div>
-            </div>
-          </div>
+            <dl className="space-y-2 text-sm">
+              {[
+                ['Specialty', profile.specialty],
+                ['Hospital', profile.hospital],
+                ['Experience', `${profile.experience} years`],
+              ].map(([label, value]) => (
+                <div key={label} className="flex justify-between gap-4">
+                  <dt className="text-slate-400 dark:text-slate-500">{label}</dt>
+                  <dd className="text-right font-medium text-slate-900 dark:text-white">{value}</dd>
+                </div>
+              ))}
+            </dl>
+          </Panel>
 
-          {/* Today's appointments */}
-          <div className="bg-white border border-gray-100 rounded-2xl p-6">
-            <h2 className="font-bold text-gray-900 mb-4">Today&apos;s Appointments</h2>
+          <Panel title="Today's Appointments" actions={<Link href="/doctor-portal/appointments" className="text-xs font-semibold text-blue-600 hover:underline dark:text-blue-400">View all</Link>}>
             {todaysAppointments.length === 0 ? (
-              <p className="text-sm text-gray-400 py-6 text-center">No appointments scheduled for today.</p>
+              <PanelEmpty>No appointments scheduled for today.</PanelEmpty>
             ) : (
-              <div className="space-y-3">
+              <ul className="space-y-3">
                 {todaysAppointments.map((a) => (
-                  <div key={a.id} className="flex items-center justify-between gap-3 p-3 bg-gray-50 rounded-xl">
+                  <li key={a.id} className="flex items-center justify-between gap-3 rounded-xl bg-slate-50 p-3 dark:bg-slate-800/50">
                     <div className="min-w-0">
-                      <p className="font-medium text-gray-900 text-sm truncate">{a.patient}</p>
-                      <p className="text-xs text-gray-400">{a.type === 'VIDEO' ? '💻 Video' : '🏥 In-Person'} · {new Date(a.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                      <p className="truncate text-sm font-medium text-slate-900 dark:text-white">{a.patient}</p>
+                      <p className="text-xs text-slate-400 dark:text-slate-500">
+                        {a.type === 'VIDEO' ? 'Video' : 'In-person'} · {formatDateTime(a.scheduledAt)}
+                      </p>
                     </div>
-                    <span className="px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0 bg-green-100 text-green-700">
-                      {a.status}
-                    </span>
-                  </div>
+                    <Pill className={APPOINTMENT_STATUS_COLORS[a.status] ?? 'bg-slate-100 text-slate-700'}>{a.status}</Pill>
+                  </li>
                 ))}
-              </div>
+              </ul>
             )}
-          </div>
+          </Panel>
         </div>
 
-        {/* All patients preview */}
-        <div className="bg-white border border-gray-100 rounded-2xl p-6">
-          <h2 className="font-bold text-gray-900 mb-4">My Patients</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-gray-400 border-b border-gray-100">
-                  <th className="pb-2 font-medium">Patient</th>
-                  <th className="pb-2 font-medium">Treatment</th>
-                  <th className="pb-2 font-medium">Stage</th>
-                  <th className="pb-2 font-medium text-right">Last Visit</th>
-                </tr>
-              </thead>
-              <tbody>
-                {MOCK_DOCTOR_PATIENTS.map((p) => (
-                  <tr key={p.id} className="border-b border-gray-50 last:border-0">
-                    <td className="py-3">
-                      <p className="font-medium text-gray-900">{p.name}</p>
-                      <p className="text-xs text-gray-400">{p.country}</p>
-                    </td>
-                    <td className="py-3 text-gray-600">{p.treatment}</td>
-                    <td className="py-3">
-                      <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
-                        {p.stage.replace(/_/g, ' ')}
-                      </span>
-                    </td>
-                    <td className="py-3 text-right text-gray-500">{p.lastVisit}</td>
+        <Panel title="My Patients" actions={<Link href="/doctor-portal/patients" className="text-xs font-semibold text-blue-600 hover:underline dark:text-blue-400">View all</Link>}>
+          {patients.length === 0 ? (
+            <PanelEmpty>No patients have been assigned to you yet.</PanelEmpty>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-slate-100 text-left text-slate-400 dark:border-slate-800 dark:text-slate-500">
+                    <th scope="col" className="pb-2 font-medium">Patient</th>
+                    <th scope="col" className="pb-2 font-medium">Treatment</th>
+                    <th scope="col" className="pb-2 font-medium">Stage</th>
+                    <th scope="col" className="pb-2 text-right font-medium">Last Visit</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+                </thead>
+                <tbody>
+                  {patients.slice(0, 8).map((p) => (
+                    <tr key={p.id} className="border-b border-slate-50 last:border-0 dark:border-slate-800/50">
+                      <td className="py-3">
+                        <p className="font-medium text-slate-900 dark:text-white">{p.name}</p>
+                        <p className="text-xs text-slate-400 dark:text-slate-500">{p.country}</p>
+                      </td>
+                      <td className="py-3 text-slate-600 dark:text-slate-300">{p.treatment}</td>
+                      <td className="py-3">
+                        <Pill className={CASE_STATUS_COLORS[p.stage] ?? 'bg-slate-100 text-slate-700'}>
+                          {CASE_STATUS_LABELS[p.stage] ?? p.stage}
+                        </Pill>
+                      </td>
+                      <td className="py-3 text-right text-slate-500 dark:text-slate-400">{formatDate(p.lastVisit)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Panel>
+      </PortalPage>
     </DoctorLayout>
   );
 }

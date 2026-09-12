@@ -1,76 +1,88 @@
 import type { Metadata } from 'next';
+import { CalendarDays } from 'lucide-react';
+
 import DoctorLayout from '@/components/DoctorLayout';
-import { MOCK_DOCTOR_APPOINTMENTS } from '@/lib/portal-mock-data';
+import { PortalPage, PageHeader, Pill } from '@/components/portal/PortalPage';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { getPortalSession } from '@/lib/portal-session';
+import { getDoctorAppointments } from '@/lib/portal-data';
+import { APPOINTMENT_STATUS_COLORS } from '@/lib/lead-stage';
 
-export const metadata: Metadata = { title: 'Calendar | Tatavera Health' };
+export const metadata: Metadata = { title: 'Calendar | Doctor Portal' };
+export const dynamic = 'force-dynamic';
 
-const APPT_TYPE_LABELS: Record<string, string> = {
-  VIDEO: '💻 Video',
-  IN_PERSON: '🏥 In-Person',
-};
+export default async function DoctorCalendarPage() {
+  const session = await getPortalSession(['DOCTOR', 'ADMIN']);
+  const appointments = await getDoctorAppointments(session, { upcomingOnly: true });
 
-const APPT_STATUS_COLORS: Record<string, string> = {
-  CONFIRMED: 'bg-green-100 text-green-700',
-  SCHEDULED: 'bg-amber-100 text-amber-700',
-};
-
-export default function DoctorCalendarPage() {
-  const grouped = MOCK_DOCTOR_APPOINTMENTS.reduce<Record<string, typeof MOCK_DOCTOR_APPOINTMENTS>>((acc, a) => {
-    const dateKey = a.scheduledAt.slice(0, 10);
-    if (!acc[dateKey]) acc[dateKey] = [];
-    acc[dateKey].push(a);
-    return acc;
-  }, {});
-
-  const days = Object.keys(grouped).sort();
+  // Group by calendar day in the server's timezone; keys sort lexicographically
+  // because they are ISO date strings.
+  const grouped = new Map<string, typeof appointments>();
+  for (const appointment of appointments) {
+    const key = appointment.scheduledAt.slice(0, 10);
+    grouped.set(key, [...(grouped.get(key) ?? []), appointment]);
+  }
+  const days = [...grouped.keys()].sort();
 
   return (
     <DoctorLayout>
-      <div className="p-6 lg:p-10 max-w-6xl">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Calendar</h1>
-          <p className="text-gray-500 mt-1">Your upcoming appointments, grouped by day.</p>
-        </div>
+      <PortalPage>
+        <PageHeader title="Calendar" description="Your upcoming appointments, grouped by day." />
 
         {days.length === 0 ? (
-          <div className="text-center py-16 text-gray-400 bg-white border border-gray-100 rounded-2xl">
-            <p className="text-4xl mb-3">🗓️</p>
-            <p>No upcoming appointments.</p>
-          </div>
+          <EmptyState
+            icon={<CalendarDays className="h-6 w-6" aria-hidden="true" />}
+            title="No upcoming appointments"
+            description="Once patients book consultations with you, they will appear here in date order."
+          />
         ) : (
           <div className="space-y-6">
-            {days.map((dateKey) => {
-              const date = new Date(`${dateKey}T00:00:00Z`);
-              const appts = [...grouped[dateKey]].sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt));
+            {days.map((dayKey) => {
+              const date = new Date(`${dayKey}T00:00:00`);
+              const dayAppointments = [...(grouped.get(dayKey) ?? [])].sort((a, b) =>
+                a.scheduledAt.localeCompare(b.scheduledAt)
+              );
+
               return (
-                <div key={dateKey} className="bg-white border border-gray-100 rounded-2xl p-6">
-                  <h2 className="font-bold text-gray-900 mb-4">
-                    {date.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'UTC' })}
+                <section
+                  key={dayKey}
+                  className="rounded-2xl border border-slate-200 bg-white p-6 shadow-card dark:border-slate-800 dark:bg-slate-900"
+                >
+                  <h2 className="mb-4 font-bold text-slate-900 dark:text-white">
+                    {date.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
                   </h2>
-                  <div className="space-y-3">
-                    {appts.map((a) => (
-                      <div key={a.id} className="flex items-center justify-between gap-3 p-3 bg-gray-50 rounded-xl">
-                        <div className="flex items-center gap-4 min-w-0">
-                          <div className="text-sm font-semibold text-gray-700 w-16 flex-shrink-0">
-                            {new Date(a.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </div>
+                  <ul className="space-y-3">
+                    {dayAppointments.map((a) => (
+                      <li
+                        key={a.id}
+                        className="flex items-center justify-between gap-3 rounded-xl bg-slate-50 p-3 dark:bg-slate-800/50"
+                      >
+                        <div className="flex min-w-0 items-center gap-4">
+                          <time
+                            dateTime={a.scheduledAt}
+                            className="w-16 flex-shrink-0 text-sm font-semibold text-slate-700 dark:text-slate-200"
+                          >
+                            {new Date(a.scheduledAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                          </time>
                           <div className="min-w-0">
-                            <p className="font-medium text-gray-900 text-sm truncate">{a.patient}</p>
-                            <p className="text-xs text-gray-400">{APPT_TYPE_LABELS[a.type] ?? a.type}</p>
+                            <p className="truncate text-sm font-medium text-slate-900 dark:text-white">{a.patient}</p>
+                            <p className="text-xs text-slate-400 dark:text-slate-500">
+                              {a.type === 'VIDEO' ? 'Video consultation' : 'In-person'} · {a.duration} min
+                            </p>
                           </div>
                         </div>
-                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium flex-shrink-0 ${APPT_STATUS_COLORS[a.status] ?? 'bg-gray-100 text-gray-700'}`}>
+                        <Pill className={APPOINTMENT_STATUS_COLORS[a.status] ?? 'bg-slate-100 text-slate-700'}>
                           {a.status}
-                        </span>
-                      </div>
+                        </Pill>
+                      </li>
                     ))}
-                  </div>
-                </div>
+                  </ul>
+                </section>
               );
             })}
           </div>
         )}
-      </div>
+      </PortalPage>
     </DoctorLayout>
   );
 }

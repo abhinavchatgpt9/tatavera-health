@@ -39,6 +39,29 @@ function slugify(input: string): string {
     .replace(/^-+|-+$/g, '');
 }
 
+/**
+ * Free-text procedure names differ between sources — a hospital lists
+ * "Coronary Bypass (CABG)" while the catalogue calls it "Coronary Artery
+ * Bypass (CABG)". Match on distinctive keywords rather than string similarity,
+ * which is both more accurate and easier to extend.
+ */
+const TREATMENT_KEYWORDS: Array<{ slug: string; keywords: string[] }> = [
+  { slug: 'coronary-artery-bypass', keywords: ['cabg', 'bypass', 'coronary', 'cardiac surgery', 'open heart', 'heart surgery', 'angioplasty', 'valve'] },
+  { slug: 'total-knee-replacement', keywords: ['knee', 'joint replacement', 'hip replacement', 'orthopedic', 'orthopaedic', 'arthroplasty'] },
+  { slug: 'liver-transplant', keywords: ['liver', 'transplant', 'kidney', 'hepat', 'bone marrow'] },
+  { slug: 'ivf-treatment', keywords: ['ivf', 'fertility', 'iui', 'reproductive'] },
+  { slug: 'hair-transplant', keywords: ['hair', 'cosmetic', 'aesthetic', 'plastic surgery', 'rhinoplasty'] },
+  { slug: 'spine-surgery', keywords: ['spine', 'spinal', 'disc', 'tlif', 'plif', 'laminectomy'] },
+];
+
+/** Returns the catalogue treatment slugs a free-text procedure name maps to. */
+function matchTreatmentSlugs(text: string): string[] {
+  const haystack = text.toLowerCase();
+  return TREATMENT_KEYWORDS.filter((entry) =>
+    entry.keywords.some((keyword) => haystack.includes(keyword))
+  ).map((entry) => entry.slug);
+}
+
 // ─── TREATMENTS ───────────────────────────────────────────────────────────────
 
 async function seedTreatments() {
@@ -194,17 +217,21 @@ async function seedHospitals() {
       });
     }
 
-    // Link the hospital to any catalogue treatment whose specialty it offers.
-    for (const procedure of PROCEDURES) {
-      const offersIt = source.treatments?.some(
-        (item) =>
-          slugify(item.name).includes(slugify(procedure.name).split('-')[0]) ||
-          slugify(procedure.name).includes(slugify(item.name).split('-')[0])
-      );
-      if (!offersIt) continue;
+    // Link the hospital to catalogue treatments, matching both its listed
+    // procedures and its declared specialties.
+    const searchText = [...(source.treatments ?? []).map((t) => t.name), ...(source.specialties ?? [])].join(' | ');
+    const matchedSlugs = new Set(matchTreatmentSlugs(searchText));
 
-      const treatment = await prisma.treatment.findUnique({ where: { slug: procedure.slug } });
-      if (!treatment) continue;
+    for (const slug of matchedSlugs) {
+      const procedure = PROCEDURES.find((p) => p.slug === slug);
+      const treatment = await prisma.treatment.findUnique({ where: { slug } });
+      if (!treatment || !procedure) continue;
+
+      // Prefer this hospital's own quoted price where it lists one.
+      const ownPrice = (source.treatments ?? []).find((item) =>
+        matchTreatmentSlugs(item.name).includes(slug)
+      );
+      const [ownFrom, ownTo] = ownPrice ? parseCostRange(ownPrice.costUSD) : [0, 0];
 
       await prisma.hospitalTreatment.upsert({
         where: { hospitalId_treatmentId: { hospitalId: hospital.id, treatmentId: treatment.id } },
@@ -212,8 +239,8 @@ async function seedHospitals() {
         create: {
           hospitalId: hospital.id,
           treatmentId: treatment.id,
-          costFrom: procedure.costFrom,
-          costTo: procedure.costTo,
+          costFrom: ownFrom || procedure.costFrom,
+          costTo: ownTo || procedure.costTo,
         },
       });
     }
@@ -306,14 +333,11 @@ async function seedDoctors() {
 // ─── TESTIMONIALS ─────────────────────────────────────────────────────────────
 
 async function seedTestimonials() {
-  const treatments = await prisma.treatment.findMany({ select: { id: true, name: true } });
+  const treatments = await prisma.treatment.findMany({ select: { id: true, slug: true } });
 
   for (const source of PATIENT_TESTIMONIALS) {
-    const treatment = treatments.find(
-      (t) =>
-        slugify(t.name).includes(slugify(source.treatment).split('-')[0]) ||
-        slugify(source.treatment).includes(slugify(t.name).split('-')[0])
-    );
+    const [matchedSlug] = matchTreatmentSlugs(source.treatment);
+    const treatment = matchedSlug ? treatments.find((t) => t.slug === matchedSlug) : undefined;
 
     const existing = await prisma.testimonial.findFirst({
       where: { patientName: source.name, patientCountry: source.country },

@@ -43,3 +43,46 @@ export const VISA_STAGE_COLORS: Record<string, string> = {
   APPROVED: 'bg-green-100 text-green-700',
   REJECTED: 'bg-red-100 text-red-700',
 };
+
+export const CASE_STATUS_LABELS: Record<string, string> = {
+  ENQUIRY_SUBMITTED: 'Enquiry Submitted',
+  CASE_ASSIGNED: 'Case Assigned',
+  CONSULTATION_SCHEDULED: 'Consultation Scheduled',
+  TRAVEL_PLANNED: 'Travel Planned',
+  TREATMENT: 'In Treatment',
+  RECOVERY: 'Recovery',
+  FOLLOW_UP: 'Follow Up',
+  COMPLETED: 'Completed',
+};
+
+export const CASE_STATUS_COLORS: Record<string, string> = {
+  ENQUIRY_SUBMITTED: 'bg-gray-100 text-gray-700',
+  CASE_ASSIGNED: 'bg-slate-100 text-slate-700',
+  CONSULTATION_SCHEDULED: 'bg-indigo-100 text-indigo-700',
+  TRAVEL_PLANNED: 'bg-orange-100 text-orange-700',
+  TREATMENT: 'bg-blue-100 text-blue-700',
+  RECOVERY: 'bg-amber-100 text-amber-700',
+  FOLLOW_UP: 'bg-pink-100 text-pink-700',
+  COMPLETED: 'bg-emerald-100 text-emerald-700',
+};
+
+export const APPOINTMENT_STATUS_COLORS: Record<string, string> = {
+  SCHEDULED: 'bg-amber-100 text-amber-700',
+  CONFIRMED: 'bg-green-100 text-green-700',
+  COMPLETED: 'bg-emerald-100 text-emerald-700',
+  CANCELLED: 'bg-red-100 text-red-700',
+};
+
+export const QUOTATION_STATUS_COLORS: Record<string, string> = {
+  DRAFT: 'bg-gray-100 text-gray-700',
+  SENT: 'bg-blue-100 text-blue-700',
+  ACCEPTED: 'bg-green-100 text-green-700',
+  DECLINED: 'bg-red-100 text-red-700',
+  EXPIRED: 'bg-amber-100 text-amber-700',
+};
+
+export const TASK_STATUS_COLORS: Record<string, string> = {
+  PENDING: 'bg-amber-100 text-amber-700',
+  IN_PROGRESS: 'bg-blue-100 text-blue-700',
+  DONE: 'bg-emerald-100 text-emerald-700',
+};

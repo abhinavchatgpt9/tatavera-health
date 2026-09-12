@@ -1,84 +1,115 @@
-'use client';
+import type { Metadata } from 'next';
 
-import { useState } from 'react';
 import DoctorLayout from '@/components/DoctorLayout';
-import { MOCK_DOCTOR_PATIENTS } from '@/lib/portal-mock-data';
+import { PortalPage, PageHeader, Pill, formatDate } from '@/components/portal/PortalPage';
+import { DataTable, type Column } from '@/components/portal/DataTable';
+import { getPortalSession } from '@/lib/portal-session';
+import { getDoctorReports } from '@/lib/portal-data';
 
-const REPORT_COUNTS = [3, 1, 2, 4];
+export const metadata: Metadata = { title: 'Reports | Doctor Portal' };
+export const dynamic = 'force-dynamic';
 
-const PATIENT_REPORTS = MOCK_DOCTOR_PATIENTS.map((p, i) => ({
-  ...p,
-  reportCount: REPORT_COUNTS[i] ?? 1,
-}));
+type Report = Awaited<ReturnType<typeof getDoctorReports>>[number];
 
-export default function DoctorReportsPage() {
-  const [search, setSearch] = useState('');
+const CATEGORY_LABELS: Record<string, string> = {
+  BLOOD_REPORTS: 'Blood reports',
+  IMAGING: 'Imaging',
+  PRESCRIPTIONS: 'Prescriptions',
+  OTHER: 'Other',
+};
 
-  const filtered = PATIENT_REPORTS.filter((p) =>
-    p.name.toLowerCase().includes(search.toLowerCase()) || p.treatment.toLowerCase().includes(search.toLowerCase())
-  );
+const CATEGORY_COLORS: Record<string, string> = {
+  BLOOD_REPORTS: 'bg-rose-100 text-rose-700',
+  IMAGING: 'bg-purple-100 text-purple-700',
+  PRESCRIPTIONS: 'bg-blue-100 text-blue-700',
+  OTHER: 'bg-slate-100 text-slate-700',
+};
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+const columns: Array<Column<Report>> = [
+  {
+    key: 'patient',
+    header: 'Patient',
+    render: (r) => (
+      <>
+        <p className="font-medium text-slate-900 dark:text-white">{r.patient}</p>
+        <p className="text-xs text-slate-400 dark:text-slate-500">{r.country}</p>
+      </>
+    ),
+  },
+  {
+    key: 'file',
+    header: 'File',
+    render: (r) => (
+      <>
+        <p className="text-slate-600 dark:text-slate-300">{r.fileName}</p>
+        <p className="text-xs text-slate-400 dark:text-slate-500">{formatFileSize(r.fileSize)}</p>
+      </>
+    ),
+  },
+  {
+    key: 'category',
+    header: 'Category',
+    render: (r) => (
+      <Pill className={CATEGORY_COLORS[r.category] ?? 'bg-slate-100 text-slate-700'}>
+        {CATEGORY_LABELS[r.category] ?? r.category}
+      </Pill>
+    ),
+  },
+  {
+    key: 'uploaded',
+    header: 'Uploaded',
+    hideOnMobile: true,
+    render: (r) => <span className="text-slate-500 dark:text-slate-400">{formatDate(r.createdAt)}</span>,
+  },
+  {
+    key: 'open',
+    header: '',
+    align: 'right',
+    render: (r) => (
+      <a
+        href={r.fileUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-xs font-semibold text-blue-600 hover:underline dark:text-blue-400"
+      >
+        Open
+      </a>
+    ),
+  },
+];
+
+export default async function DoctorReportsPage() {
+  const session = await getPortalSession(['DOCTOR', 'ADMIN']);
+  const reports = await getDoctorReports(session);
 
   return (
     <DoctorLayout>
-      <div className="p-6 lg:p-10 max-w-6xl">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Reports</h1>
-          <p className="text-gray-500 mt-1">Medical reports awaiting your review.</p>
-        </div>
+      <PortalPage>
+        <PageHeader
+          title="Reports"
+          description={`${reports.length} medical ${reports.length === 1 ? 'file' : 'files'} uploaded by your patients`}
+        />
 
-        <div className="flex flex-col sm:flex-row gap-3 mb-6">
-          <input
-            type="text"
-            placeholder="Search by patient name or treatment..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-400"
-          />
-        </div>
-
-        {filtered.length === 0 ? (
-          <div className="text-center py-16 text-gray-400 bg-white border border-gray-100 rounded-2xl">
-            <p className="text-4xl mb-3">📄</p>
-            <p>No reports match your search.</p>
-          </div>
-        ) : (
-          <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50">
-                  <tr className="text-left text-gray-500">
-                    <th className="px-5 py-3 font-medium">Patient</th>
-                    <th className="px-5 py-3 font-medium">Treatment</th>
-                    <th className="px-5 py-3 font-medium">Last Visit</th>
-                    <th className="px-5 py-3 font-medium">Reports</th>
-                    <th className="px-5 py-3"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((p) => (
-                    <tr key={p.id} className="border-t border-gray-50 hover:bg-gray-50/50">
-                      <td className="px-5 py-3">
-                        <p className="font-medium text-gray-900">{p.name}</p>
-                        <p className="text-xs text-gray-400">{p.country}</p>
-                      </td>
-                      <td className="px-5 py-3 text-gray-600">{p.treatment}</td>
-                      <td className="px-5 py-3 text-gray-500">{p.lastVisit}</td>
-                      <td className="px-5 py-3">
-                        <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
-                          {p.reportCount} {p.reportCount === 1 ? 'report' : 'reports'}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3 text-right">
-                        <button className="text-blue-600 text-xs font-semibold hover:underline">View Reports</button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-      </div>
+        <DataTable
+          rows={reports}
+          columns={columns}
+          searchIn={(r) => `${r.patient} ${r.country} ${r.fileName}`}
+          searchPlaceholder="Search by patient or file name…"
+          filter={{
+            label: 'All categories',
+            options: Object.entries(CATEGORY_LABELS).map(([value, label]) => ({ value, label })),
+            matches: (r, value) => r.category === value,
+          }}
+          emptyTitle="No reports uploaded yet"
+          emptyDescription="When your patients upload scans, blood work or prescriptions, they appear here for review."
+        />
+      </PortalPage>
     </DoctorLayout>
   );
 }
