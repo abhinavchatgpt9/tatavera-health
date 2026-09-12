@@ -592,6 +592,14 @@ model Enquiry {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
+  // Optional patient-uploaded attachment (e.g. previous medical history) from
+  // the consultation form. Only the S3 object key is durable — the signed
+  // download URL is regenerated on read (see getAdminEnquiries), same pattern
+  // as Report.fileUrl, so it never goes stale.
+  attachmentKey  String?
+  attachmentName String?
+  attachmentSize Int?
+
   user      User?      @relation(fields: [userId], references: [id])
   treatment Treatment? @relation(fields: [treatmentId], references: [id])
   lead      Lead?

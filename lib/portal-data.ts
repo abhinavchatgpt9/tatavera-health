@@ -2,6 +2,7 @@ import 'server-only';
 
 import { prisma } from '@/lib/prisma';
 import type { PortalSession } from '@/lib/portal-session';
+import { getConsultAttachmentUrl } from '@/lib/consult-attachment';
 
 /**
  * Read-side data access for the five portals.
@@ -1053,7 +1054,16 @@ export async function getAdminEnquiries() {
     take: 200,
   });
 
-  return enquiries.map((e) => ({
+  const withAttachmentUrls = await Promise.all(
+    enquiries.map(async (e) => ({
+      ...e,
+      // Signed URL is regenerated on every load rather than stored, same
+      // pattern as Report.fileUrl, so it never goes stale (1h expiry).
+      attachmentUrl: e.attachmentKey ? await getConsultAttachmentUrl(e.attachmentKey) : null,
+    }))
+  );
+
+  return withAttachmentUrls.map((e) => ({
     id: e.id,
     name: e.name,
     email: e.email,
@@ -1067,6 +1077,9 @@ export async function getAdminEnquiries() {
     // Set when this submission came from a logged-in Patient account, so
     // admins can see it's tied to an existing user instead of an anonymous lead.
     existingPatient: e.user ? { id: e.user.id, name: e.user.name } : null,
+    attachment: e.attachmentKey
+      ? { name: e.attachmentName, size: e.attachmentSize, url: e.attachmentUrl }
+      : null,
     createdAt: e.createdAt.toISOString(),
   }));
 }

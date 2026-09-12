@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { DataTable, type Column } from '@/components/portal/DataTable';
 import { Pill, formatDate, formatDateTime, formatMoney } from '@/components/portal/PortalPage';
 import { LEAD_STAGE_LABELS, LEAD_STAGE_COLORS, CASE_STATUS_LABELS, CASE_STATUS_COLORS } from '@/lib/lead-stage';
@@ -869,8 +870,102 @@ type Enquiry = {
   source: string | null;
   converted: boolean;
   existingPatient: { id: string; name: string } | null;
+  attachment: { name: string | null; size: number | null; url: string | null } | null;
   createdAt: string;
 };
+
+function formatFileSize(bytes: number | null): string {
+  if (!bytes) return '';
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+/** Full-detail popup for a single enquiry — opened by clicking its row. */
+function EnquiryDetailModal({ enquiry, onClose }: { enquiry: Enquiry; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900">
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">{enquiry.name}</h3>
+              {enquiry.existingPatient && <Pill className="bg-teal-100 text-teal-700">Existing patient</Pill>}
+            </div>
+            <p className="text-sm text-slate-500 dark:text-slate-400">{formatDateTime(enquiry.createdAt)}</p>
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
+          >
+            ✕
+          </button>
+        </div>
+
+        <dl className="space-y-3 text-sm">
+          <div className="flex justify-between gap-4">
+            <dt className="text-slate-500 dark:text-slate-400">Email</dt>
+            <dd className="text-right font-medium text-slate-900 dark:text-white">{enquiry.email}</dd>
+          </div>
+          <div className="flex justify-between gap-4">
+            <dt className="text-slate-500 dark:text-slate-400">Phone</dt>
+            <dd className="text-right font-medium text-slate-900 dark:text-white">{enquiry.phone}</dd>
+          </div>
+          <div className="flex justify-between gap-4">
+            <dt className="text-slate-500 dark:text-slate-400">Country</dt>
+            <dd className="text-right font-medium text-slate-900 dark:text-white">{enquiry.country}</dd>
+          </div>
+          <div className="flex justify-between gap-4">
+            <dt className="text-slate-500 dark:text-slate-400">Interested in</dt>
+            <dd className="text-right font-medium text-slate-900 dark:text-white">{enquiry.treatment}</dd>
+          </div>
+          <div className="flex justify-between gap-4">
+            <dt className="text-slate-500 dark:text-slate-400">Source</dt>
+            <dd className="max-w-[60%] text-right text-slate-600 dark:text-slate-300 break-words">{enquiry.source ?? 'Website'}</dd>
+          </div>
+          <div className="flex justify-between gap-4">
+            <dt className="text-slate-500 dark:text-slate-400">Status</dt>
+            <dd>
+              <Pill className={ENQUIRY_STATUS_COLORS[enquiry.status] ?? 'bg-slate-100 text-slate-700'}>
+                {enquiry.status.replace(/_/g, ' ')}
+              </Pill>
+            </dd>
+          </div>
+
+          {enquiry.message && (
+            <div>
+              <dt className="mb-1 text-slate-500 dark:text-slate-400">Full query</dt>
+              <dd className="whitespace-pre-wrap rounded-xl bg-slate-50 p-3 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                {enquiry.message}
+              </dd>
+            </div>
+          )}
+
+          {enquiry.attachment && (
+            <div>
+              <dt className="mb-1 text-slate-500 dark:text-slate-400">Attachment</dt>
+              <dd>
+                {enquiry.attachment.url ? (
+                  <a
+                    href={enquiry.attachment.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 font-medium text-blue-600 hover:bg-blue-50 dark:border-slate-700 dark:text-blue-400 dark:hover:bg-slate-800"
+                  >
+                    📎 {enquiry.attachment.name} {formatFileSize(enquiry.attachment.size)}
+                  </a>
+                ) : (
+                  <span className="text-slate-400">{enquiry.attachment.name} (link expired — reopen this page)</span>
+                )}
+              </dd>
+            </div>
+          )}
+        </dl>
+      </div>
+    </div>
+  );
+}
 
 const ENQUIRY_STATUS_COLORS: Record<string, string> = {
   NEW: 'bg-blue-100 text-blue-700',
@@ -891,6 +986,7 @@ const enquiryColumns: Array<Column<Enquiry>> = [
           {e.existingPatient && (
             <Pill className="bg-teal-100 text-teal-700">Existing patient</Pill>
           )}
+          {e.attachment && <span title="Has attachment">📎</span>}
         </div>
         <p className="text-xs text-slate-400 dark:text-slate-500">
           {e.country} · {e.email} · {e.phone}
@@ -926,22 +1022,28 @@ const enquiryColumns: Array<Column<Enquiry>> = [
 ];
 
 export function AdminEnquiriesTable({ rows }: { rows: Enquiry[] }) {
+  const [selected, setSelected] = useState<Enquiry | null>(null);
+
   return (
-    <DataTable
-      rows={rows}
-      columns={enquiryColumns}
-      searchIn={(e) => `${e.name} ${e.email} ${e.phone} ${e.country} ${e.treatment} ${e.message ?? ''}`}
-      searchPlaceholder="Search by name, email, country or treatment…"
-      filter={{
-        label: 'All statuses',
-        options: Object.keys(ENQUIRY_STATUS_COLORS).map((value) => ({
-          value,
-          label: value.charAt(0) + value.slice(1).toLowerCase().replace(/_/g, ' '),
-        })),
-        matches: (e, value) => e.status === value,
-      }}
-      emptyTitle="No enquiries yet"
-      emptyDescription="Enquiries submitted through the public site's forms land here first."
-    />
+    <>
+      <DataTable
+        rows={rows}
+        columns={enquiryColumns}
+        searchIn={(e) => `${e.name} ${e.email} ${e.phone} ${e.country} ${e.treatment} ${e.message ?? ''}`}
+        searchPlaceholder="Search by name, email, country or treatment…"
+        filter={{
+          label: 'All statuses',
+          options: Object.keys(ENQUIRY_STATUS_COLORS).map((value) => ({
+            value,
+            label: value.charAt(0) + value.slice(1).toLowerCase().replace(/_/g, ' '),
+          })),
+          matches: (e, value) => e.status === value,
+        }}
+        emptyTitle="No enquiries yet"
+        emptyDescription="Enquiries submitted through the public site's forms land here first."
+        onRowClick={setSelected}
+      />
+      {selected && <EnquiryDetailModal enquiry={selected} onClose={() => setSelected(null)} />}
+    </>
   );
 }

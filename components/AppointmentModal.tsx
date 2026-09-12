@@ -41,14 +41,38 @@ export default function AppointmentModal({ open, onClose, preselectedDoctor, pre
     timeSlot: '',
     preferWhatsApp: true,
   });
+  const [attachment, setAttachment] = useState<File | null>(null);
+  const [attachmentError, setAttachmentError] = useState('');
+
+  const MAX_ATTACHMENT_MB = 5;
+  const ALLOWED_ATTACHMENT_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
 
   // Reset on open
   useEffect(() => {
     if (open) {
       setStep('details');
       setForm((f) => ({ ...f, specialty: '', condition: '', date: '', timeSlot: '' }));
+      setAttachment(null);
+      setAttachmentError('');
     }
   }, [open]);
+
+  const handleAttachmentChange = (file: File | null) => {
+    setAttachmentError('');
+    if (!file) {
+      setAttachment(null);
+      return;
+    }
+    if (!ALLOWED_ATTACHMENT_TYPES.includes(file.type)) {
+      setAttachmentError('Only PDF, JPG or PNG files are supported.');
+      return;
+    }
+    if (file.size > MAX_ATTACHMENT_MB * 1024 * 1024) {
+      setAttachmentError(`File must be under ${MAX_ATTACHMENT_MB} MB.`);
+      return;
+    }
+    setAttachment(file);
+  };
 
   const set = (key: keyof typeof form, value: string | boolean) =>
     setForm((f) => ({ ...f, [key]: value }));
@@ -60,11 +84,21 @@ export default function AppointmentModal({ open, onClose, preselectedDoctor, pre
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      await fetch('/api/consult', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, hospital: preselectedHospital, doctor: preselectedDoctor }),
-      });
+      if (attachment) {
+        // Multipart when there's a file to carry — the API accepts both shapes.
+        const fd = new FormData();
+        Object.entries({ ...form, hospital: preselectedHospital, doctor: preselectedDoctor }).forEach(([key, value]) => {
+          if (value !== undefined) fd.append(key, String(value));
+        });
+        fd.append('attachment', attachment);
+        await fetch('/api/consult', { method: 'POST', body: fd });
+      } else {
+        await fetch('/api/consult', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...form, hospital: preselectedHospital, doctor: preselectedDoctor }),
+        });
+      }
     } catch {
       // fail silently — we show success either way and route via WhatsApp as backup
     } finally {
@@ -196,6 +230,23 @@ export default function AppointmentModal({ open, onClose, preselectedDoctor, pre
                   placeholder="E.g. 'Diagnosed with early-stage colon cancer, looking for second opinion and treatment plan'"
                   className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 resize-none"
                 />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">
+                  Previous medical history (optional)
+                </label>
+                <input
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  onChange={(e) => handleAttachmentChange(e.target.files?.[0] ?? null)}
+                  className="w-full text-xs text-gray-500 file:mr-3 file:rounded-lg file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-blue-600 hover:file:bg-blue-100"
+                />
+                <p className="mt-1 text-[11px] text-gray-400">PDF, JPG or PNG — max {MAX_ATTACHMENT_MB} MB.</p>
+                {attachmentError && <p className="mt-1 text-[11px] text-red-500">{attachmentError}</p>}
+                {attachment && !attachmentError && (
+                  <p className="mt-1 text-[11px] text-green-600">✓ {attachment.name} attached</p>
+                )}
               </div>
 
               <button
