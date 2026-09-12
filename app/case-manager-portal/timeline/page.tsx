@@ -1,74 +1,59 @@
 import type { Metadata } from 'next';
+import { History } from 'lucide-react';
+
 import CaseManagerLayout from '@/components/CaseManagerLayout';
-import { MOCK_CM_LEADS, LEAD_STAGES } from '@/lib/portal-mock-data';
+import { PortalPage, PageHeader, Pill, formatDateTime } from '@/components/portal/PortalPage';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { getPortalSession } from '@/lib/portal-session';
+import { getCaseManagerTimeline } from '@/lib/portal-data';
 import { LEAD_STAGE_LABELS, LEAD_STAGE_COLORS } from '@/lib/lead-stage';
 
-export const metadata: Metadata = { title: 'Case Timeline | Tatavera Health' };
+export const metadata: Metadata = { title: 'Timeline | Case Manager Portal' };
+export const dynamic = 'force-dynamic';
 
-export default function CaseTimelinePage() {
-  const lead = MOCK_CM_LEADS[0];
-  const currentIndex = LEAD_STAGES.indexOf(lead.stage as (typeof LEAD_STAGES)[number]);
-
-  // Derive plausible increasing timestamps for completed stages, ending at lead.assignedAt or later.
-  const baseDate = new Date(lead.assignedAt);
-  const timestamps: string[] = LEAD_STAGES.map((_, i) => {
-    const offsetDays = (i - currentIndex) * 2;
-    const d = new Date(baseDate);
-    d.setDate(d.getDate() + offsetDays);
-    return d.toISOString().slice(0, 10);
-  });
+export default async function CaseManagerTimelinePage() {
+  const session = await getPortalSession(['CASE_MANAGER', 'ADMIN']);
+  const events = await getCaseManagerTimeline(session);
 
   return (
     <CaseManagerLayout>
-      <div className="p-6 lg:p-10 max-w-4xl">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Case Timeline</h1>
-          <p className="text-gray-500 mt-1">Stage-by-stage progress for the selected case.</p>
-        </div>
+      <PortalPage>
+        <PageHeader
+          title="Timeline"
+          description="Every stage change across your leads, newest first — the audit trail for each patient journey."
+        />
 
-        {/* Header card */}
-        <div className="bg-white border border-gray-100 rounded-2xl p-6 mb-8 flex items-center justify-between flex-wrap gap-4">
-          <div>
-            <p className="font-bold text-gray-900 text-lg">{lead.name}</p>
-            <p className="text-sm text-gray-500 mt-0.5">{lead.treatment} · {lead.country}</p>
-          </div>
-          <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${LEAD_STAGE_COLORS[lead.stage]}`}>
-            {LEAD_STAGE_LABELS[lead.stage]}
-          </span>
-        </div>
-
-        {/* Vertical timeline */}
-        <div className="bg-white border border-gray-100 rounded-2xl p-6">
-          <div className="space-y-0">
-            {LEAD_STAGES.map((stage, i) => {
-              const completed = i <= currentIndex;
-              const isLast = i === LEAD_STAGES.length - 1;
-              return (
-                <div key={stage} className="flex gap-4">
-                  <div className="flex flex-col items-center">
-                    <div
-                      className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold ${
-                        completed ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-400 border-2 border-gray-200'
-                      }`}
-                    >
-                      {completed ? '✓' : ''}
-                    </div>
-                    {!isLast && <div className={`w-0.5 flex-1 min-h-[2rem] ${completed ? 'bg-green-300' : 'bg-gray-100'}`} />}
-                  </div>
-                  <div className="pb-8">
-                    <p className={`font-medium ${completed ? 'text-gray-900' : 'text-gray-400'}`}>
-                      {LEAD_STAGE_LABELS[stage]}
-                    </p>
-                    <p className={`text-xs mt-0.5 ${completed ? 'text-gray-500' : 'text-gray-300'}`}>
-                      {completed ? timestamps[i] : 'Upcoming'}
-                    </p>
-                  </div>
+        {events.length === 0 ? (
+          <EmptyState
+            icon={<History className="h-6 w-6" aria-hidden="true" />}
+            title="No stage changes recorded"
+            description="Each time a lead moves through the pipeline, the change is recorded here with its timestamp."
+          />
+        ) : (
+          <ol className="relative space-y-1 border-l border-slate-200 pl-6 dark:border-slate-800">
+            {events.map((event) => (
+              <li key={event.id} className="relative pb-6 last:pb-0">
+                <span
+                  aria-hidden="true"
+                  className="absolute -left-[1.9rem] top-1.5 h-3 w-3 rounded-full border-2 border-white bg-blue-500 dark:border-slate-950"
+                />
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <p className="font-medium text-slate-900 dark:text-white">{event.lead}</p>
+                  <Pill className={LEAD_STAGE_COLORS[event.stage] ?? 'bg-slate-100 text-slate-700'}>
+                    {LEAD_STAGE_LABELS[event.stage] ?? event.stage}
+                  </Pill>
+                  <time dateTime={event.createdAt} className="text-xs text-slate-400 dark:text-slate-500">
+                    {formatDateTime(event.createdAt)}
+                  </time>
                 </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
+                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                  {event.note ?? `Moved to ${LEAD_STAGE_LABELS[event.stage] ?? event.stage}.`}
+                </p>
+              </li>
+            ))}
+          </ol>
+        )}
+      </PortalPage>
     </CaseManagerLayout>
   );
 }
