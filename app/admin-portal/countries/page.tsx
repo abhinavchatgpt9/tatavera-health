@@ -1,54 +1,90 @@
-'use client';
+import type { Metadata } from 'next';
 
-import { useState } from 'react';
 import AdminLayout from '@/components/AdminLayout';
-import { DESTINATIONS } from '@/lib/constants';
+import { PortalPage, PageHeader, Pill } from '@/components/portal/PortalPage';
+import { DataTable, type Column } from '@/components/portal/DataTable';
+import { getPortalSession } from '@/lib/portal-session';
+import { getAdminDestinations } from '@/lib/portal-data';
 
-export default function AdminCountriesPage() {
-  const [search, setSearch] = useState('');
-  const filtered = DESTINATIONS.filter((d) => d.country.toLowerCase().includes(search.toLowerCase()));
+export const metadata: Metadata = { title: 'Countries | Admin Portal' };
+export const dynamic = 'force-dynamic';
+
+type Destination = Awaited<ReturnType<typeof getAdminDestinations>>[number];
+
+const columns: Array<Column<Destination>> = [
+  {
+    key: 'country',
+    header: 'Country',
+    render: (d) => (
+      <>
+        <p className="font-medium text-slate-900 dark:text-white">{d.country}</p>
+        <p className="text-xs text-slate-400 dark:text-slate-500">
+          {d.countryCode} · /{d.slug}
+        </p>
+      </>
+    ),
+  },
+  {
+    key: 'specialties',
+    header: 'Top specialties',
+    render: (d) => (
+      <span className="text-slate-600 dark:text-slate-300">
+        {d.topSpecialties.length > 0 ? d.topSpecialties.join(', ') : '—'}
+      </span>
+    ),
+  },
+  {
+    key: 'leads',
+    header: 'Patients from here',
+    align: 'right',
+    render: (d) => <span className="font-medium text-slate-900 dark:text-white">{d.leads}</span>,
+  },
+  {
+    key: 'status',
+    header: 'Status',
+    align: 'right',
+    render: (d) => (
+      <div className="flex justify-end gap-1.5">
+        {d.featured && <Pill className="bg-amber-100 text-amber-700">Featured</Pill>}
+        <Pill className={d.published ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-700'}>
+          {d.published ? 'Live' : 'Hidden'}
+        </Pill>
+      </div>
+    ),
+  },
+];
+
+export default async function AdminCountriesPage() {
+  await getPortalSession(['ADMIN']);
+  const destinations = await getAdminDestinations();
 
   return (
     <AdminLayout>
-      <div className="p-6 lg:p-10 max-w-6xl">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Countries</h1>
-        <input
-          type="text"
-          placeholder="Search countries..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full sm:w-96 px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-400 mb-6"
+      <PortalPage>
+        <PageHeader
+          title="Countries"
+          description={`${destinations.length} destination ${destinations.length === 1 ? 'page' : 'pages'}. Lead counts show where patients are travelling from.`}
         />
-        {filtered.length === 0 ? (
-          <div className="text-center py-16 text-gray-400 bg-white border border-gray-100 rounded-2xl">
-            <p className="text-4xl mb-3">🌍</p>
-            <p>No countries match your search.</p>
-          </div>
-        ) : (
-          <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50">
-                  <tr className="text-left text-gray-500">
-                    <th className="px-5 py-3 font-medium">Country</th>
-                    <th className="px-5 py-3 font-medium">Top Treatment</th>
-                    <th className="px-5 py-3 font-medium">Highlight</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((d) => (
-                    <tr key={d.slug} className="border-t border-gray-50 hover:bg-gray-50/50">
-                      <td className="px-5 py-3 font-medium text-gray-900">{d.flag} {d.country}</td>
-                      <td className="px-5 py-3 text-gray-600">{d.topTreatment}</td>
-                      <td className="px-5 py-3 text-gray-600">{d.highlight}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-      </div>
+
+        <DataTable
+          rows={destinations}
+          columns={columns}
+          searchIn={(d) => `${d.country} ${d.countryCode} ${d.topSpecialties.join(' ')}`}
+          searchPlaceholder="Search by country or specialty…"
+          filter={{
+            label: 'All statuses',
+            options: [
+              { value: 'LIVE', label: 'Live' },
+              { value: 'HIDDEN', label: 'Hidden' },
+              { value: 'FEATURED', label: 'Featured' },
+            ],
+            matches: (d, value) =>
+              value === 'LIVE' ? d.published : value === 'HIDDEN' ? !d.published : d.featured,
+          }}
+          emptyTitle="No destination pages"
+          emptyDescription="Destination pages explain what treatment in a country involves — visa, travel and accommodation."
+        />
+      </PortalPage>
     </AdminLayout>
   );
 }

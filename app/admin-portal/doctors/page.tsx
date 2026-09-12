@@ -1,69 +1,92 @@
-'use client';
+import type { Metadata } from 'next';
 
-import { useState } from 'react';
 import AdminLayout from '@/components/AdminLayout';
+import { PortalPage, PageHeader, Pill } from '@/components/portal/PortalPage';
+import { DataTable, type Column } from '@/components/portal/DataTable';
+import { getPortalSession } from '@/lib/portal-session';
+import { getAdminDoctors } from '@/lib/portal-data';
 
-const DOCTORS = [
-  { id: 'd1', name: 'Dr. Rajesh Nair', specialty: 'Cardiology', hospital: 'Fortis Escorts Heart Institute', status: 'ACTIVE' },
-  { id: 'd2', name: 'Dr. Meera Iyer', specialty: 'Cardiac Surgery', hospital: 'Fortis Escorts Heart Institute', status: 'ACTIVE' },
-  { id: 'd3', name: 'Dr. Arjun Kapoor', specialty: 'Electrophysiology', hospital: 'Fortis Escorts Heart Institute', status: 'ACTIVE' },
-  { id: 'd4', name: 'Dr. Devi Prasad Shetty', specialty: 'Cardiac Surgery', hospital: 'Narayana Health, Bangalore', status: 'ACTIVE' },
-  { id: 'd5', name: 'Dr. Arun Saroha', specialty: 'Neurosurgery', hospital: 'Max Healthcare, Delhi', status: 'PENDING' },
+export const metadata: Metadata = { title: 'Doctors | Admin Portal' };
+export const dynamic = 'force-dynamic';
+
+type Doctor = Awaited<ReturnType<typeof getAdminDoctors>>[number];
+
+const columns: Array<Column<Doctor>> = [
+  {
+    key: 'doctor',
+    header: 'Doctor',
+    render: (d) => (
+      <>
+        <p className="font-medium text-slate-900 dark:text-white">{d.name}</p>
+        <p className="text-xs text-slate-400 dark:text-slate-500">{d.designation}</p>
+      </>
+    ),
+  },
+  { key: 'specialty', header: 'Specialty', render: (d) => <span className="text-slate-600 dark:text-slate-300">{d.specialty}</span> },
+  {
+    key: 'hospital',
+    header: 'Hospital',
+    hideOnMobile: true,
+    render: (d) => <span className="text-slate-600 dark:text-slate-300">{d.hospital}</span>,
+  },
+  {
+    key: 'cases',
+    header: 'Cases',
+    align: 'right',
+    hideOnMobile: true,
+    render: (d) => <span className="text-slate-600 dark:text-slate-300">{d.cases}</span>,
+  },
+  {
+    key: 'rating',
+    header: 'Rating',
+    align: 'right',
+    render: (d) => (
+      <span className="text-slate-600 dark:text-slate-300">
+        {d.rating > 0 ? `${d.rating.toFixed(1)} (${d.reviewCount})` : '—'}
+      </span>
+    ),
+  },
+  {
+    key: 'status',
+    header: 'Status',
+    align: 'right',
+    render: (d) => (
+      <div className="flex justify-end gap-1.5">
+        {d.featured && <Pill className="bg-amber-100 text-amber-700">Featured</Pill>}
+        <Pill className={d.published ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-700'}>
+          {d.published ? 'Live' : 'Hidden'}
+        </Pill>
+      </div>
+    ),
+  },
 ];
 
-export default function AdminDoctorsPage() {
-  const [search, setSearch] = useState('');
-  const filtered = DOCTORS.filter(
-    (d) => d.name.toLowerCase().includes(search.toLowerCase()) || d.specialty.toLowerCase().includes(search.toLowerCase())
-  );
+export default async function AdminDoctorsPage() {
+  await getPortalSession(['ADMIN']);
+  const doctors = await getAdminDoctors();
+
+  const specialties = [...new Set(doctors.map((d) => d.specialty))].sort();
+  const live = doctors.filter((d) => d.published).length;
 
   return (
     <AdminLayout>
-      <div className="p-6 lg:p-10 max-w-6xl">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Doctors</h1>
-        <input
-          type="text"
-          placeholder="Search by name or specialty..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full sm:w-96 px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-400 mb-6"
+      <PortalPage>
+        <PageHeader title="Doctors" description={`${doctors.length} in the catalogue · ${live} live on the site`} />
+
+        <DataTable
+          rows={doctors}
+          columns={columns}
+          searchIn={(d) => `${d.name} ${d.specialty} ${d.designation} ${d.hospital}`}
+          searchPlaceholder="Search by name, specialty or hospital…"
+          filter={{
+            label: 'All specialties',
+            options: specialties.map((s) => ({ value: s, label: s })),
+            matches: (d, value) => d.specialty === value,
+          }}
+          emptyTitle="No doctors in the catalogue"
+          emptyDescription="Run the database seed, or add doctors to populate the public directory."
         />
-        {filtered.length === 0 ? (
-          <div className="text-center py-16 text-gray-400 bg-white border border-gray-100 rounded-2xl">
-            <p className="text-4xl mb-3">🩺</p>
-            <p>No doctors match your search.</p>
-          </div>
-        ) : (
-          <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50">
-                  <tr className="text-left text-gray-500">
-                    <th className="px-5 py-3 font-medium">Name</th>
-                    <th className="px-5 py-3 font-medium">Specialty</th>
-                    <th className="px-5 py-3 font-medium">Hospital</th>
-                    <th className="px-5 py-3 font-medium">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((d) => (
-                    <tr key={d.id} className="border-t border-gray-50 hover:bg-gray-50/50">
-                      <td className="px-5 py-3 font-medium text-gray-900">{d.name}</td>
-                      <td className="px-5 py-3 text-gray-600">{d.specialty}</td>
-                      <td className="px-5 py-3 text-gray-600">{d.hospital}</td>
-                      <td className="px-5 py-3">
-                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${d.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
-                          {d.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-      </div>
+      </PortalPage>
     </AdminLayout>
   );
 }

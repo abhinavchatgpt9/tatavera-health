@@ -1,122 +1,122 @@
-'use client';
+import type { Metadata } from 'next';
+import Link from 'next/link';
 
-import { useState } from 'react';
 import AdminLayout from '@/components/AdminLayout';
-import { SITE_NAME, CONTACT_EMAIL, LANGUAGES } from '@/lib/constants';
+import { PortalPage, PageHeader, Panel } from '@/components/portal/PortalPage';
+import { getPortalSession } from '@/lib/portal-session';
+import { getAdminContentCounts, getAdminStats } from '@/lib/portal-data';
+import { SITE_NAME, SITE_URL, CONTACT_EMAIL, WHATSAPP_NUMBER } from '@/lib/constants';
 
-const CURRENCIES = ['USD', 'EUR', 'GBP', 'AED', 'INR'];
+export const metadata: Metadata = { title: 'Settings | Admin Portal' };
+export const dynamic = 'force-dynamic';
 
-export default function AdminSettingsPage() {
-  const [siteName, setSiteName] = useState(SITE_NAME);
-  const [contactEmail, setContactEmail] = useState(CONTACT_EMAIL);
-  const [currency, setCurrency] = useState('USD');
-  const [languages, setLanguages] = useState<string[]>(LANGUAGES.map((l) => l.code));
-  const [features, setFeatures] = useState({
-    whatsapp: true,
-    blog: true,
-    testimonials: true,
-    maintenance: false,
-  });
-  const [saved, setSaved] = useState(false);
+/** Environment variables the app reads, and whether they are actually set. */
+function integrationStatus() {
+  return [
+    { name: 'Database (Postgres)', env: 'DATABASE_URL', set: Boolean(process.env.DATABASE_URL), purpose: 'Every page and API route' },
+    { name: 'Auth signing key', env: 'JWT_SECRET', set: Boolean(process.env.JWT_SECRET), purpose: 'Login sessions and 2FA' },
+    { name: 'Email (Resend)', env: 'RESEND_API_KEY', set: Boolean(process.env.RESEND_API_KEY), purpose: 'Signup verification, login OTP' },
+    { name: 'SMS (Twilio)', env: 'TWILIO_ACCOUNT_SID', set: Boolean(process.env.TWILIO_ACCOUNT_SID), purpose: 'Phone login OTP' },
+    { name: 'File storage (AWS S3)', env: 'AWS_S3_BUCKET', set: Boolean(process.env.AWS_S3_BUCKET), purpose: 'Patient report uploads' },
+    { name: 'AI chatbot', env: 'GEMINI_API_KEY', set: Boolean(process.env.GEMINI_API_KEY), purpose: 'The Aria assistant on the public site' },
+    { name: 'Analytics', env: 'NEXT_PUBLIC_GA_MEASUREMENT_ID', set: Boolean(process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID), purpose: 'Traffic and conversion tracking' },
+  ];
+}
 
-  const toggleLanguage = (code: string) => {
-    setLanguages((prev) => (prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]));
-  };
+export default async function AdminSettingsPage() {
+  const session = await getPortalSession(['ADMIN']);
+  const [stats, counts] = await Promise.all([getAdminStats(), getAdminContentCounts()]);
 
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
-  };
+  const integrations = integrationStatus();
+  const missing = integrations.filter((i) => !i.set);
 
   return (
     <AdminLayout>
-      <div className="p-6 lg:p-10 max-w-3xl">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-          <p className="text-gray-500 mt-1">Platform-wide configuration.</p>
+      <PortalPage>
+        <PageHeader title="Settings" description="Platform configuration and integration status." />
+
+        <div className="mb-6 grid gap-6 md:grid-cols-2">
+          <Panel title="Site">
+            <dl className="space-y-2 text-sm">
+              {[
+                ['Name', SITE_NAME],
+                ['URL', SITE_URL],
+                ['Contact email', CONTACT_EMAIL],
+                ['WhatsApp', WHATSAPP_NUMBER],
+                ['Signed in as', `${session.name} (${session.email})`],
+              ].map(([label, value]) => (
+                <div key={label} className="flex justify-between gap-4">
+                  <dt className="text-slate-400 dark:text-slate-500">{label}</dt>
+                  <dd className="text-right font-medium text-slate-900 dark:text-white">{value}</dd>
+                </div>
+              ))}
+            </dl>
+            <p className="mt-4 text-xs text-slate-400 dark:text-slate-500">
+              These come from <code className="font-mono">lib/constants.ts</code> — change them there and redeploy.
+            </p>
+          </Panel>
+
+          <Panel title="Data">
+            <dl className="space-y-2 text-sm">
+              {[
+                ['Users', stats.totalUsers],
+                ['Hospitals', counts.hospitals],
+                ['Doctors', counts.doctors],
+                ['Treatments', counts.treatments],
+                ['Blog posts', counts.blogPosts],
+                ['Leads', stats.totalLeads],
+              ].map(([label, value]) => (
+                <div key={String(label)} className="flex justify-between gap-4">
+                  <dt className="text-slate-400 dark:text-slate-500">{label}</dt>
+                  <dd className="text-right font-medium text-slate-900 dark:text-white">{value}</dd>
+                </div>
+              ))}
+            </dl>
+          </Panel>
         </div>
 
-        <div className="bg-white border border-gray-100 rounded-2xl p-6 mb-6 space-y-5">
-          <h2 className="font-bold text-gray-900">General</h2>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Site Name</label>
-            <input
-              type="text"
-              value={siteName}
-              onChange={(e) => setSiteName(e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-400"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Contact Email</label>
-            <input
-              type="email"
-              value={contactEmail}
-              onChange={(e) => setContactEmail(e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-400"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Default Currency</label>
-            <select
-              value={currency}
-              onChange={(e) => setCurrency(e.target.value)}
-              className="w-full sm:w-48 px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-400 bg-white"
-            >
-              {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
-            </select>
-          </div>
-        </div>
-
-        <div className="bg-white border border-gray-100 rounded-2xl p-6 mb-6">
-          <h2 className="font-bold text-gray-900 mb-4">Supported Languages</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {LANGUAGES.map((lang) => (
-              <label key={lang.code} className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-xl cursor-pointer text-sm">
-                <input
-                  type="checkbox"
-                  checked={languages.includes(lang.code)}
-                  onChange={() => toggleLanguage(lang.code)}
-                  className="w-4 h-4 rounded"
-                />
-                <span>{lang.flag} {lang.label}</span>
-              </label>
+        <Panel title="Integrations">
+          <ul className="divide-y divide-slate-100 dark:divide-slate-800">
+            {integrations.map((integration) => (
+              <li key={integration.env} className="flex flex-wrap items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
+                <div className="min-w-0">
+                  <p className="font-medium text-slate-900 dark:text-white">{integration.name}</p>
+                  <p className="text-xs text-slate-400 dark:text-slate-500">
+                    <code className="font-mono">{integration.env}</code> · {integration.purpose}
+                  </p>
+                </div>
+                <span
+                  className={`whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium ${
+                    integration.set ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                  }`}
+                >
+                  {integration.set ? 'Configured' : 'Not set'}
+                </span>
+              </li>
             ))}
-          </div>
-        </div>
+          </ul>
 
-        <div className="bg-white border border-gray-100 rounded-2xl p-6 mb-6 space-y-3">
-          <h2 className="font-bold text-gray-900 mb-1">Feature Toggles</h2>
-          {[
-            { key: 'whatsapp', label: 'Enable WhatsApp Widget' },
-            { key: 'blog', label: 'Enable Blog' },
-            { key: 'testimonials', label: 'Enable Testimonials' },
-            { key: 'maintenance', label: 'Maintenance Mode' },
-          ].map((f) => (
-            <label key={f.key} className="flex items-center gap-3 py-1.5 text-sm cursor-pointer">
-              <input
-                type="checkbox"
-                checked={features[f.key as keyof typeof features]}
-                onChange={() =>
-                  setFeatures((prev) => ({ ...prev, [f.key]: !prev[f.key as keyof typeof features] }))
-                }
-                className="w-4 h-4 rounded"
-              />
-              <span className="text-gray-700">{f.label}</span>
-            </label>
-          ))}
-        </div>
+          {missing.length > 0 && (
+            <p className="mt-4 text-sm text-slate-600 dark:text-slate-300">
+              {missing.length} {missing.length === 1 ? 'integration is' : 'integrations are'} unconfigured. Features
+              that depend on them fail quietly rather than breaking the site — set the environment variables in your
+              hosting provider and redeploy.
+            </p>
+          )}
+        </Panel>
 
-        <div className="flex items-center gap-4">
-          <button
-            onClick={handleSave}
-            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-colors"
-          >
-            Save Settings
-          </button>
-          {saved && <span className="text-sm text-green-600 font-medium">✓ Settings saved</span>}
-        </div>
-      </div>
+        <p className="mt-6 text-sm text-slate-500 dark:text-slate-400">
+          Staff accounts are managed in{' '}
+          <Link href="/admin-portal/users" className="font-medium text-blue-600 hover:underline dark:text-blue-400">
+            Users
+          </Link>
+          . Every change made by staff is recorded in{' '}
+          <Link href="/admin-portal/audit-logs" className="font-medium text-blue-600 hover:underline dark:text-blue-400">
+            Audit Logs
+          </Link>
+          .
+        </p>
+      </PortalPage>
     </AdminLayout>
   );
 }

@@ -1,52 +1,102 @@
-'use client';
+import type { Metadata } from 'next';
 
-import { useState } from 'react';
 import AdminLayout from '@/components/AdminLayout';
-import { SPECIALTIES } from '@/lib/constants';
+import { PortalPage, PageHeader, Pill, formatMoney } from '@/components/portal/PortalPage';
+import { DataTable, type Column } from '@/components/portal/DataTable';
+import { getPortalSession } from '@/lib/portal-session';
+import { getAdminTreatments } from '@/lib/portal-data';
 
-export default function AdminTreatmentsPage() {
-  const [search, setSearch] = useState('');
-  const filtered = SPECIALTIES.filter((s) => s.name.toLowerCase().includes(search.toLowerCase()));
+export const metadata: Metadata = { title: 'Treatments | Admin Portal' };
+export const dynamic = 'force-dynamic';
+
+type Treatment = Awaited<ReturnType<typeof getAdminTreatments>>[number];
+
+const columns: Array<Column<Treatment>> = [
+  {
+    key: 'treatment',
+    header: 'Treatment',
+    render: (t) => (
+      <>
+        <p className="font-medium text-slate-900 dark:text-white">{t.name}</p>
+        <p className="text-xs text-slate-400 dark:text-slate-500">/{t.slug}</p>
+      </>
+    ),
+  },
+  { key: 'specialty', header: 'Specialty', render: (t) => <span className="text-slate-600 dark:text-slate-300">{t.specialty}</span> },
+  {
+    key: 'cost',
+    header: 'Cost range',
+    render: (t) => (
+      <span className="text-slate-600 dark:text-slate-300">
+        {t.costFrom !== null && t.costTo !== null
+          ? `${formatMoney(t.costFrom, t.currency)} – ${formatMoney(t.costTo, t.currency)}`
+          : '—'}
+      </span>
+    ),
+  },
+  {
+    key: 'duration',
+    header: 'Duration',
+    hideOnMobile: true,
+    render: (t) => <span className="text-slate-500 dark:text-slate-400">{t.duration ?? '—'}</span>,
+  },
+  {
+    key: 'linked',
+    header: 'Hospitals / FAQs',
+    align: 'right',
+    hideOnMobile: true,
+    render: (t) => (
+      <span className="text-slate-600 dark:text-slate-300">
+        {t.hospitals} / {t.faqs}
+      </span>
+    ),
+  },
+  {
+    key: 'enquiries',
+    header: 'Enquiries',
+    align: 'right',
+    render: (t) => <span className="font-medium text-slate-900 dark:text-white">{t.enquiries}</span>,
+  },
+  {
+    key: 'status',
+    header: 'Status',
+    align: 'right',
+    render: (t) => (
+      <Pill className={t.published ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-700'}>
+        {t.published ? 'Live' : 'Hidden'}
+      </Pill>
+    ),
+  },
+];
+
+export default async function AdminTreatmentsPage() {
+  await getPortalSession(['ADMIN']);
+  const treatments = await getAdminTreatments();
+
+  const specialties = [...new Set(treatments.map((t) => t.specialty))].sort();
 
   return (
     <AdminLayout>
-      <div className="p-6 lg:p-10 max-w-6xl">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Treatments</h1>
-        <input
-          type="text"
-          placeholder="Search treatments..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full sm:w-96 px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-400 mb-6"
+      <PortalPage>
+        <PageHeader
+          title="Treatments"
+          description={`${treatments.length} in the catalogue across ${specialties.length} ${specialties.length === 1 ? 'specialty' : 'specialties'}`}
         />
-        {filtered.length === 0 ? (
-          <div className="text-center py-16 text-gray-400 bg-white border border-gray-100 rounded-2xl">
-            <p className="text-4xl mb-3">💉</p>
-            <p>No treatments match your search.</p>
-          </div>
-        ) : (
-          <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50">
-                  <tr className="text-left text-gray-500">
-                    <th className="px-5 py-3 font-medium">Treatment</th>
-                    <th className="px-5 py-3 font-medium">Description</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((s) => (
-                    <tr key={s.slug} className="border-t border-gray-50 hover:bg-gray-50/50">
-                      <td className="px-5 py-3 font-medium text-gray-900">{s.emoji} {s.name}</td>
-                      <td className="px-5 py-3 text-gray-600">{s.description}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-      </div>
+
+        <DataTable
+          rows={treatments}
+          columns={columns}
+          searchIn={(t) => `${t.name} ${t.specialty} ${t.slug}`}
+          searchPlaceholder="Search by treatment or specialty…"
+          filter={{
+            label: 'All specialties',
+            options: specialties.map((s) => ({ value: s, label: s })),
+            matches: (t, value) => t.specialty === value,
+          }}
+          emptyTitle="No treatments in the catalogue"
+          emptyDescription="Treatments drive the public procedure pages and the enquiry form's dropdown."
+        />
+      </PortalPage>
     </AdminLayout>
   );
 }

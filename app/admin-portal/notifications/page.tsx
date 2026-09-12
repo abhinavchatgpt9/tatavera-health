@@ -1,67 +1,122 @@
-'use client';
+import type { Metadata } from 'next';
+import Link from 'next/link';
 
-import { useState } from 'react';
 import AdminLayout from '@/components/AdminLayout';
+import { PortalPage, PageHeader, Pill, formatDateTime } from '@/components/portal/PortalPage';
+import { DataTable, type Column } from '@/components/portal/DataTable';
+import { getPortalSession } from '@/lib/portal-session';
+import { getAdminEnquiries } from '@/lib/portal-data';
 
-const NOTIFICATIONS = [
-  { id: 'n1', title: 'New treatment guide published', audience: 'All Patients', date: '2026-07-10', status: 'Sent' },
-  { id: 'n2', title: 'Platform maintenance scheduled', audience: 'All Users', date: '2026-07-11', status: 'Sent' },
-  { id: 'n3', title: 'New hospital onboarding: Mount Elizabeth', audience: 'Doctors', date: '2026-07-09', status: 'Sent' },
-  { id: 'n4', title: 'Reminder: complete your profile', audience: 'Hospitals', date: '2026-07-12', status: 'Scheduled' },
-  { id: 'n5', title: 'Monthly newsletter — July edition', audience: 'All Patients', date: '2026-07-15', status: 'Scheduled' },
+export const metadata: Metadata = { title: 'Notifications | Admin Portal' };
+export const dynamic = 'force-dynamic';
+
+type Enquiry = Awaited<ReturnType<typeof getAdminEnquiries>>[number];
+
+const STATUS_COLORS: Record<string, string> = {
+  NEW: 'bg-blue-100 text-blue-700',
+  CONTACTED: 'bg-indigo-100 text-indigo-700',
+  IN_PROGRESS: 'bg-amber-100 text-amber-700',
+  CONVERTED: 'bg-emerald-100 text-emerald-700',
+  CLOSED: 'bg-slate-100 text-slate-700',
+};
+
+const columns: Array<Column<Enquiry>> = [
+  {
+    key: 'enquiry',
+    header: 'Enquiry',
+    render: (e) => (
+      <>
+        <p className="font-medium text-slate-900 dark:text-white">{e.name}</p>
+        <p className="text-xs text-slate-400 dark:text-slate-500">
+          {e.country} · {e.email} · {e.phone}
+        </p>
+      </>
+    ),
+  },
+  {
+    key: 'treatment',
+    header: 'Interested in',
+    render: (e) => (
+      <>
+        <p className="text-slate-600 dark:text-slate-300">{e.treatment}</p>
+        {e.message && <p className="line-clamp-1 max-w-xs text-xs text-slate-400 dark:text-slate-500">{e.message}</p>}
+      </>
+    ),
+  },
+  {
+    key: 'source',
+    header: 'Source',
+    hideOnMobile: true,
+    render: (e) => <span className="text-slate-500 dark:text-slate-400">{e.source ?? 'Website'}</span>,
+  },
+  {
+    key: 'received',
+    header: 'Received',
+    hideOnMobile: true,
+    render: (e) => <span className="text-slate-500 dark:text-slate-400">{formatDateTime(e.createdAt)}</span>,
+  },
+  {
+    key: 'status',
+    header: 'Status',
+    align: 'right',
+    render: (e) => (
+      <div className="flex justify-end gap-1.5">
+        {e.converted && <Pill className="bg-emerald-100 text-emerald-700">Lead created</Pill>}
+        <Pill className={STATUS_COLORS[e.status] ?? 'bg-slate-100 text-slate-700'}>
+          {e.status.replace(/_/g, ' ')}
+        </Pill>
+      </div>
+    ),
+  },
 ];
 
-export default function AdminNotificationsPage() {
-  const [search, setSearch] = useState('');
-  const filtered = NOTIFICATIONS.filter((n) => n.title.toLowerCase().includes(search.toLowerCase()));
+export default async function AdminNotificationsPage() {
+  await getPortalSession(['ADMIN']);
+  const enquiries = await getAdminEnquiries();
+
+  const unhandled = enquiries.filter((e) => e.status === 'NEW').length;
 
   return (
     <AdminLayout>
-      <div className="p-6 lg:p-10 max-w-6xl">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Notifications</h1>
-        <input
-          type="text"
-          placeholder="Search notifications..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full sm:w-96 px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-400 mb-6"
+      <PortalPage>
+        <PageHeader
+          title="Notifications"
+          description={
+            unhandled === 0
+              ? 'No new enquiries waiting. Everything has been picked up.'
+              : `${unhandled} new ${unhandled === 1 ? 'enquiry' : 'enquiries'} waiting to be actioned.`
+          }
         />
-        {filtered.length === 0 ? (
-          <div className="text-center py-16 text-gray-400 bg-white border border-gray-100 rounded-2xl">
-            <p className="text-4xl mb-3">🔔</p>
-            <p>No notifications match your search.</p>
-          </div>
-        ) : (
-          <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50">
-                  <tr className="text-left text-gray-500">
-                    <th className="px-5 py-3 font-medium">Title</th>
-                    <th className="px-5 py-3 font-medium">Audience</th>
-                    <th className="px-5 py-3 font-medium">Date</th>
-                    <th className="px-5 py-3 font-medium">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((n) => (
-                    <tr key={n.id} className="border-t border-gray-50 hover:bg-gray-50/50">
-                      <td className="px-5 py-3 font-medium text-gray-900">{n.title}</td>
-                      <td className="px-5 py-3 text-gray-600">{n.audience}</td>
-                      <td className="px-5 py-3 text-gray-500">{n.date}</td>
-                      <td className="px-5 py-3">
-                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${n.status === 'Sent' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
-                          {n.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-      </div>
+
+        <div className="mb-6 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/40">
+          <p className="text-sm text-slate-600 dark:text-slate-300">
+            This page lists incoming enquiries from the public site, newest first — the things that actually need a
+            response. There is no push or email notification delivery yet; a case manager converts an enquiry into a
+            lead from the{' '}
+            <Link href="/admin-portal/crm" className="font-medium text-blue-600 hover:underline dark:text-blue-400">
+              CRM
+            </Link>
+            .
+          </p>
+        </div>
+
+        <DataTable
+          rows={enquiries}
+          columns={columns}
+          searchIn={(e) => `${e.name} ${e.email} ${e.phone} ${e.country} ${e.treatment} ${e.message ?? ''}`}
+          searchPlaceholder="Search by name, email, country or treatment…"
+          filter={{
+            label: 'All statuses',
+            options: Object.keys(STATUS_COLORS).map((value) => ({
+              value,
+              label: value.charAt(0) + value.slice(1).toLowerCase().replace(/_/g, ' '),
+            })),
+            matches: (e, value) => e.status === value,
+          }}
+          emptyTitle="No enquiries yet"
+          emptyDescription="Enquiries submitted through the public site's forms land here first."
+        />
+      </PortalPage>
     </AdminLayout>
   );
 }

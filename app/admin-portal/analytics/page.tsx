@@ -1,78 +1,107 @@
 import type { Metadata } from 'next';
+
 import AdminLayout from '@/components/AdminLayout';
-import { MOCK_CRM_FUNNEL } from '@/lib/portal-mock-data';
+import { PortalPage, PageHeader, StatGrid, Panel, PanelEmpty, formatMoney } from '@/components/portal/PortalPage';
+import { getPortalSession } from '@/lib/portal-session';
+import { getAdminAnalytics, getAdminStats } from '@/lib/portal-data';
 
-export const metadata: Metadata = { title: 'Analytics | Tatavera Health' };
+export const metadata: Metadata = { title: 'Analytics | Admin Portal' };
+export const dynamic = 'force-dynamic';
 
-const REVENUE_BY_MONTH = [
-  { month: 'Jan', amount: 312000 },
-  { month: 'Feb', amount: 298000 },
-  { month: 'Mar', amount: 341000 },
-  { month: 'Apr', amount: 356000 },
-  { month: 'May', amount: 329000 },
-  { month: 'Jun', amount: 402000 },
-  { month: 'Jul', amount: 482000 },
-  { month: 'Aug', amount: 445000 },
-  { month: 'Sep', amount: 468000 },
-  { month: 'Oct', amount: 501000 },
-  { month: 'Nov', amount: 489000 },
-  { month: 'Dec', amount: 534000 },
-];
+function Bar({ label, value, max, display }: { label: string; value: number; max: number; display?: string }) {
+  const width = max === 0 ? 0 : Math.round((value / max) * 100);
+  return (
+    <div>
+      <div className="mb-1 flex justify-between gap-4 text-sm">
+        <span className="text-slate-600 dark:text-slate-300">{label}</span>
+        <span className="font-medium text-slate-900 dark:text-white">{display ?? value}</span>
+      </div>
+      <div className="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+        <div className="h-full rounded-full bg-blue-500" style={{ width: `${width}%` }} />
+      </div>
+    </div>
+  );
+}
 
-export default function AdminAnalyticsPage() {
-  const maxRevenue = Math.max(...REVENUE_BY_MONTH.map((m) => m.amount));
+export default async function AdminAnalyticsPage() {
+  await getPortalSession(['ADMIN']);
+
+  const [analytics, stats] = await Promise.all([getAdminAnalytics(), getAdminStats()]);
+
+  const maxLeads = Math.max(1, ...analytics.months.map((m) => m.leads));
+  const maxValue = Math.max(1, ...analytics.months.map((m) => m.value));
+  const maxSource = Math.max(1, ...analytics.topSources.map((s) => s.count));
+  const maxCountry = Math.max(1, ...analytics.topCountries.map((c) => c.count));
+
+  const sixMonthLeads = analytics.months.reduce((sum, m) => sum + m.leads, 0);
+  const sixMonthValue = analytics.months.reduce((sum, m) => sum + m.value, 0);
 
   return (
     <AdminLayout>
-      <div className="p-6 lg:p-10 max-w-6xl">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Analytics</h1>
-          <p className="text-gray-500 mt-1">Conversion trends and revenue performance.</p>
-        </div>
+      <PortalPage>
+        <PageHeader title="Analytics" description="Lead volume and value over the last six months." />
 
-        {/* Conversion by stage */}
-        <div className="bg-white border border-gray-100 rounded-2xl p-6 mb-6">
-          <h2 className="font-bold text-gray-900 mb-4">Conversion by Stage</h2>
-          <div className="space-y-3">
-            {MOCK_CRM_FUNNEL.map((stage, i) => {
-              const pct = ((stage.count / MOCK_CRM_FUNNEL[0].count) * 100).toFixed(1);
-              return (
-                <div key={stage.stage} className="flex items-center gap-3">
-                  <p className="text-xs text-gray-500 w-36 flex-shrink-0 truncate">{stage.stage}</p>
-                  <div className="flex-1 bg-gray-100 rounded-full h-3">
-                    <div
-                      className="bg-blue-500 h-3 rounded-full"
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                  <p className="text-xs font-medium text-gray-700 w-16 text-right">{pct}%</p>
-                  {i === 0 && <span className="text-[10px] text-gray-300 w-14">baseline</span>}
-                  {i !== 0 && <span className="w-14" />}
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        <StatGrid
+          stats={[
+            { label: 'Leads (6 months)', value: sixMonthLeads, emoji: '🎯' },
+            { label: 'Pipeline (6 months)', value: formatMoney(sixMonthValue), emoji: '💰' },
+            { label: 'Conversion Rate', value: `${stats.conversionRate}%`, emoji: '📈' },
+            { label: 'Active Leads', value: stats.activeLeads, emoji: '🔥' },
+          ]}
+        />
 
-        {/* Revenue by month */}
-        <div className="bg-white border border-gray-100 rounded-2xl p-6">
-          <h2 className="font-bold text-gray-900 mb-4">Revenue by Month</h2>
-          <div className="space-y-3">
-            {REVENUE_BY_MONTH.map((m) => (
-              <div key={m.month} className="flex items-center gap-3">
-                <p className="text-xs text-gray-500 w-10 flex-shrink-0">{m.month}</p>
-                <div className="flex-1 bg-gray-100 rounded-full h-3">
-                  <div
-                    className="bg-emerald-500 h-3 rounded-full"
-                    style={{ width: `${(m.amount / maxRevenue) * 100}%` }}
-                  />
-                </div>
-                <p className="text-xs font-semibold text-gray-700 w-20 text-right">${m.amount.toLocaleString()}</p>
+        <div className="mb-6 grid gap-6 md:grid-cols-2">
+          <Panel title="Leads per month">
+            {sixMonthLeads === 0 ? (
+              <PanelEmpty>No leads created in the last six months.</PanelEmpty>
+            ) : (
+              <div className="space-y-3">
+                {analytics.months.map((m) => (
+                  <Bar key={m.month} label={m.month} value={m.leads} max={maxLeads} />
+                ))}
               </div>
-            ))}
-          </div>
+            )}
+          </Panel>
+
+          <Panel title="Pipeline value per month">
+            {sixMonthValue === 0 ? (
+              <PanelEmpty>No lead values recorded in the last six months.</PanelEmpty>
+            ) : (
+              <div className="space-y-3">
+                {analytics.months.map((m) => (
+                  <Bar key={m.month} label={m.month} value={m.value} max={maxValue} display={formatMoney(m.value)} />
+                ))}
+              </div>
+            )}
+          </Panel>
         </div>
-      </div>
+
+        <div className="grid gap-6 md:grid-cols-2">
+          <Panel title="Top lead sources">
+            {analytics.topSources.length === 0 ? (
+              <PanelEmpty>No source data recorded.</PanelEmpty>
+            ) : (
+              <div className="space-y-3">
+                {analytics.topSources.map((s) => (
+                  <Bar key={s.label} label={s.label} value={s.count} max={maxSource} />
+                ))}
+              </div>
+            )}
+          </Panel>
+
+          <Panel title="Top patient countries">
+            {analytics.topCountries.length === 0 ? (
+              <PanelEmpty>No country data recorded.</PanelEmpty>
+            ) : (
+              <div className="space-y-3">
+                {analytics.topCountries.map((c) => (
+                  <Bar key={c.label} label={c.label} value={c.count} max={maxCountry} />
+                ))}
+              </div>
+            )}
+          </Panel>
+        </div>
+      </PortalPage>
     </AdminLayout>
   );
 }

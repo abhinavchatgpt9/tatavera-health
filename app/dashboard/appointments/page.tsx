@@ -1,31 +1,107 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
+import { CalendarDays } from 'lucide-react';
+
 import DashboardLayout from '@/components/DashboardLayout';
+import { PortalPage, PageHeader, Pill, formatDateTime } from '@/components/portal/PortalPage';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { Button } from '@/components/ui/Button';
+import { getPortalSession } from '@/lib/portal-session';
+import { getPatientAppointments } from '@/lib/portal-data';
+import { APPOINTMENT_STATUS_COLORS } from '@/lib/lead-stage';
 
-export const metadata: Metadata = { title: 'My Appointments | Tatavera Health' };
+export const metadata: Metadata = { title: 'Appointments | Tatavera Health' };
+export const dynamic = 'force-dynamic';
 
-export default function AppointmentsPage() {
+export default async function PatientAppointmentsPage() {
+  const session = await getPortalSession(['PATIENT', 'ADMIN']);
+  const appointments = await getPatientAppointments(session);
+
+  const now = new Date();
+  const upcoming = appointments.filter((a) => new Date(a.scheduledAt) >= now);
+  const past = appointments.filter((a) => new Date(a.scheduledAt) < now);
+
+  function Card({ a }: { a: (typeof appointments)[number] }) {
+    return (
+      <li className="rounded-2xl border border-slate-200 bg-white p-5 shadow-card dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h3 className="font-semibold text-slate-900 dark:text-white">{a.doctor}</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400">{a.specialty}</p>
+            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+              {a.type === 'VIDEO' ? 'Video consultation' : 'In-person visit'} · {formatDateTime(a.scheduledAt)} ·{' '}
+              {a.duration} min
+            </p>
+            {a.notes && <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{a.notes}</p>}
+          </div>
+          <div className="flex flex-col items-end gap-2">
+            <Pill className={APPOINTMENT_STATUS_COLORS[a.status] ?? 'bg-slate-100 text-slate-700'}>{a.status}</Pill>
+            {a.meetLink && new Date(a.scheduledAt) >= now && (
+              <Button asChild size="sm">
+                <a href={a.meetLink} target="_blank" rel="noopener noreferrer">
+                  Join call
+                </a>
+              </Button>
+            )}
+          </div>
+        </div>
+      </li>
+    );
+  }
+
   return (
     <DashboardLayout>
-      <div className="p-6 lg:p-10 max-w-4xl">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">My Appointments</h1>
-          <p className="text-gray-500 mt-1">Upcoming and past consultations.</p>
-        </div>
+      <PortalPage>
+        <PageHeader
+          title="Appointments"
+          description={
+            appointments.length === 0
+              ? 'No appointments booked yet.'
+              : `${upcoming.length} upcoming · ${past.length} past`
+          }
+        />
 
-        {/* Upcoming */}
-        <h2 className="font-bold text-gray-800 mb-3">Upcoming</h2>
-        <div className="bg-white border border-gray-100 rounded-2xl p-5 mb-8 text-center text-gray-400">
-          <p className="text-4xl mb-3">📅</p>
-          <p>No upcoming appointments.</p>
-          <p className="text-sm mt-1">Your case manager will schedule consultations and notify you here.</p>
-        </div>
+        {appointments.length === 0 ? (
+          <EmptyState
+            icon={<CalendarDays className="h-6 w-6" aria-hidden="true" />}
+            title="No appointments yet"
+            description="Your case manager books consultations on your behalf once your reports have been reviewed."
+            action={
+              <Button asChild>
+                <Link href="/free-consultation">Request a consultation</Link>
+              </Button>
+            }
+          />
+        ) : (
+          <div className="space-y-8">
+            {upcoming.length > 0 && (
+              <section>
+                <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                  Upcoming
+                </h2>
+                <ul className="space-y-3">
+                  {upcoming.map((a) => (
+                    <Card key={a.id} a={a} />
+                  ))}
+                </ul>
+              </section>
+            )}
 
-        {/* Past */}
-        <h2 className="font-bold text-gray-800 mb-3">Past Appointments</h2>
-        <div className="bg-white border border-gray-100 rounded-2xl p-5 text-center text-gray-400">
-          <p className="text-sm">No past appointments yet.</p>
-        </div>
-      </div>
+            {past.length > 0 && (
+              <section>
+                <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                  Past
+                </h2>
+                <ul className="space-y-3">
+                  {past.map((a) => (
+                    <Card key={a.id} a={a} />
+                  ))}
+                </ul>
+              </section>
+            )}
+          </div>
+        )}
+      </PortalPage>
     </DashboardLayout>
   );
 }
