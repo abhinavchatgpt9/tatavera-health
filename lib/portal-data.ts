@@ -723,6 +723,30 @@ export async function getAdminUsers(role?: string) {
   }));
 }
 
+export async function getStaffApplications(status?: string) {
+  const applications = await prisma.staffApplication.findMany({
+    where: status && status !== 'ALL' ? { status: status as 'PENDING' | 'APPROVED' | 'REJECTED' } : undefined,
+    orderBy: { createdAt: 'desc' },
+  });
+
+  return applications.map((a) => ({
+    id: a.id,
+    requestedRole: a.requestedRole,
+    name: a.name,
+    email: a.email,
+    phone: a.phone,
+    organizationName: a.organizationName,
+    city: a.city,
+    country: a.country,
+    specialtyOrType: a.specialtyOrType,
+    message: a.message,
+    status: a.status,
+    reviewNote: a.reviewNote,
+    createdAt: a.createdAt.toISOString(),
+    reviewedAt: a.reviewedAt ? a.reviewedAt.toISOString() : null,
+  }));
+}
+
 export async function getAdminAuditLogs(limit = 100) {
   const logs = await prisma.auditLog.findMany({
     include: { user: { select: { name: true } } },

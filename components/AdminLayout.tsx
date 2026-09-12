@@ -8,6 +8,7 @@ import { LogoutButton } from '@/components/LogoutButton';
 const NAV = [
   { label: 'Dashboard', href: '/admin-portal', emoji: '🏠' },
   { label: 'Users', href: '/admin-portal/users', emoji: '👥' },
+  { label: 'Applications', href: '/admin-portal/applications', emoji: '📥' },
   { label: 'Doctors', href: '/admin-portal/doctors', emoji: '🩺' },
   { label: 'Hospitals', href: '/admin-portal/hospitals', emoji: '🏥' },
   { label: 'Patients', href: '/admin-portal/patients', emoji: '🧍' },

@@ -815,3 +815,37 @@ model AuditLog {
   @@index([entityType, entityId])
   @@index([createdAt])
 }
+
+// ─── STAFF APPLICATIONS (doctor / hospital self-signup) ──────────────────────
+
+enum StaffApplicationRole {
+  DOCTOR
+  HOSPITAL_ADMIN
+}
+
+enum StaffApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model StaffApplication {
+  id               String                  @id @default(cuid())
+  requestedRole    StaffApplicationRole
+  name             String
+  email            String
+  phone            String
+  organizationName String
+  city             String?
+  country          String?
+  specialtyOrType  String?
+  message          String?                 @db.Text
+  status           StaffApplicationStatus  @default(PENDING)
+  reviewedById     String?
+  reviewNote       String?
+  createdAt        DateTime                @default(now())
+  reviewedAt       DateTime?
+
+  @@index([status])
+  @@index([email])
+}

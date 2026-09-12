@@ -3,6 +3,12 @@ import { prisma } from '@/lib/prisma';
 import { getAuthUser } from '@/lib/auth';
 import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import {
+  isAllowedReportMimeType,
+  isReportFileSizeValid,
+  buildReportFileKey,
+  normalizeReportCategory,
+} from '@/lib/report-validation';
 
 const s3 = new S3Client({
   region: process.env.AWS_REGION || 'us-east-1',
@@ -13,8 +19,6 @@ const s3 = new S3Client({
 });
 
 const BUCKET = process.env.AWS_S3_BUCKET || '';
-const ALLOWED_MIME_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
-const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
 
 export async function GET(req: NextRequest) {
   const auth = getAuthUser(req);
@@ -25,7 +29,22 @@ export async function GET(req: NextRequest) {
     orderBy: { createdAt: 'desc' },
   });
 
-  return NextResponse.json({ success: true, reports });
+  // Stored fileUrl is a signed URL from upload time (expires in 1h) — regenerate
+  // fresh ones on every list load so View/Download never go stale.
+  const withFreshUrls = await Promise.all(
+    reports.map(async (report) => {
+      try {
+        const fileUrl = await getSignedUrl(s3, new GetObjectCommand({ Bucket: BUCKET, Key: report.fileKey }), {
+          expiresIn: 3600,
+        });
+        return { ...report, fileUrl };
+      } catch {
+        return report;
+      }
+    })
+  );
+
+  return NextResponse.json({ success: true, reports: withFreshUrls });
 }
 
 export async function POST(req: NextRequest) {
@@ -41,15 +60,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: 'No file provided.' }, { status: 400 });
     }
 
-    if (file.size > MAX_FILE_SIZE) {
+    if (!isReportFileSizeValid(file.size)) {
       return NextResponse.json({ success: false, message: 'File too large. Max 20 MB.' }, { status: 400 });
     }
 
-    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+    if (!isAllowedReportMimeType(file.type)) {
       return NextResponse.json({ success: false, message: 'Invalid file type. PDF, JPG, PNG only.' }, { status: 400 });
     }
 
-    const fileKey = `reports/${auth.userId}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+    const fileKey = buildReportFileKey(auth.userId, file.name);
     const buffer = Buffer.from(await file.arrayBuffer());
 
     await s3.send(new PutObjectCommand({
@@ -67,13 +86,6 @@ export async function POST(req: NextRequest) {
       { expiresIn: 3600 }
     );
 
-    const CATEGORY_MAP: Record<string, 'BLOOD_REPORTS' | 'IMAGING' | 'PRESCRIPTIONS' | 'OTHER'> = {
-      'Blood Reports': 'BLOOD_REPORTS',
-      'Imaging': 'IMAGING',
-      'Prescriptions': 'PRESCRIPTIONS',
-      'Other': 'OTHER',
-    };
-
     const report = await prisma.report.create({
       data: {
         userId: auth.userId,
@@ -82,7 +94,7 @@ export async function POST(req: NextRequest) {
         fileUrl: signedUrl,
         fileSize: file.size,
         mimeType: file.type,
-        category: CATEGORY_MAP[category] || 'OTHER',
+        category: normalizeReportCategory(category),
       },
     });
 

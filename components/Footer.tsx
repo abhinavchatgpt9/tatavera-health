@@ -27,7 +27,7 @@ const FOOTER_LINKS = {
     { label: 'Patient Stories', href: '/patient-stories' },
     { label: 'Blog & Resources', href: '/blog' },
     { label: 'Contact Us', href: '/contact' },
-    { label: 'Partner Portal', href: '/partners' },
+    { label: 'For Doctors & Hospitals', href: '/partner-with-us' },
   ],
   Legal: [
     { label: 'Privacy Policy', href: '/privacy' },
