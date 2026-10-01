@@ -4,7 +4,6 @@ import { SITE_NAME, SITE_DESCRIPTION, SITE_TAGLINE, SITE_URL } from '@/lib/const
 import ThemeProvider from '@/components/ThemeProvider';
 import WhatsAppWidget from '@/components/WhatsAppWidget';
 import AIChatbot from '@/components/AIChatbot';
-import SocialProofNotification from '@/components/SocialProofNotification';
 import StickyMobileCTA from '@/components/StickyMobileCTA';
 
 export const viewport: Viewport = {
@@ -81,7 +80,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
           <WhatsAppWidget />
           <AIChatbot />
-          <SocialProofNotification />
           <StickyMobileCTA />
         </ThemeProvider>
       </body>
