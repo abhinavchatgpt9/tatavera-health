@@ -3,9 +3,9 @@ import { z } from 'zod';
 import { OtpPurpose } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { generateOtp, signPendingToken, signToken, verifyPassword } from '@/lib/auth';
-import { withSessionCookie } from '@/lib/session-cookie';
 import { sendTwoFactorEmail } from '@/lib/email';
 import { normalizeEmail } from '@/lib/user-email';
+import { withSessionCookie } from '@/lib/session-cookie';
 
 function exposeLoginOtpInJson(): boolean {
   if (process.env.AUTH_HIDE_DEBUG_OTP === '1' || process.env.AUTH_HIDE_DEBUG_OTP === 'true') {
@@ -15,6 +15,13 @@ function exposeLoginOtpInJson(): boolean {
     return true;
   }
   return process.env.NODE_ENV !== 'production';
+}
+
+// Temporary switch: email 2FA is disabled by default while email delivery
+// gets set up. Set AUTH_REQUIRE_2FA=1 in the environment to turn it back on
+// without reverting this file — the verify-2fa route and OTP UI are untouched.
+function requireTwoFactor(): boolean {
+  return process.env.AUTH_REQUIRE_2FA === '1' || process.env.AUTH_REQUIRE_2FA === 'true';
 }
 
 const LoginSchema = z.object({
@@ -57,8 +64,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 2FA is switched off for now. Set LOGIN_REQUIRE_2FA=1 in .env to turn the email code back on.
-    if (process.env.LOGIN_REQUIRE_2FA !== '1') {
+    if (!requireTwoFactor()) {
+      // Direct login: skip the email OTP step entirely and issue a session
+      // right away. See requireTwoFactor() above to re-enable 2FA.
       const token = signToken({ userId: user.id, role: user.role });
       return withSessionCookie(
         { success: true, user: { id: user.id, name: user.name, email: user.email, role: user.role } },

@@ -38,7 +38,7 @@ type Props<T> = {
   toolbar?: ReactNode;
   /** Shown under the heading, e.g. "8 of 12 leads". */
   onCountChange?: never;
-  /** When set, rows are clickable (and keyboard-activatable) and call this with the row. */
+  /** When set, rows become clickable (and keyboard-focusable) — e.g. to open a details modal. */
   onRowClick?: (row: T) => void;
 };
 
@@ -155,22 +155,23 @@ export function DataTable<T extends { id: string }>({
                 {filtered.map((row) => (
                   <tr
                     key={row.id}
+                    onClick={onRowClick ? () => onRowClick(row) : undefined}
+                    onKeyDown={
+                      onRowClick
+                        ? (e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              onRowClick(row);
+                            }
+                          }
+                        : undefined
+                    }
+                    tabIndex={onRowClick ? 0 : undefined}
+                    role={onRowClick ? 'button' : undefined}
                     className={[
                       'border-t border-slate-100 transition-colors hover:bg-slate-50/50 dark:border-slate-800 dark:hover:bg-slate-800/30',
-                      onRowClick ? 'cursor-pointer focus-visible:bg-slate-50 focus-visible:outline-none dark:focus-visible:bg-slate-800/40' : '',
-                    ]
-                      .filter(Boolean)
-                      .join(' ')}
-                    {...(onRowClick && {
-                      tabIndex: 0,
-                      onClick: () => onRowClick(row),
-                      onKeyDown: (e: React.KeyboardEvent) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          onRowClick(row);
-                        }
-                      },
-                    })}
+                      onRowClick ? 'cursor-pointer focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400' : '',
+                    ].join(' ')}
                   >
                     {columns.map((column) => (
                       <td

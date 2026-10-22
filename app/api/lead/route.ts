@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { isValidE164 } from '@/lib/phone';
+import { getAuthUser } from '@/lib/auth';
 
 const LeadSchema = z.object({
   name: z.string().trim().min(2, 'Please enter your full name').max(100),
@@ -29,9 +30,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     const { name, email, phone, country, procedure, message } = parsed.data;
     const ip = req.headers.get('x-forwarded-for') || req.ip || 'unknown';
+    // Attach the submission to the logged-in patient, if any, so admins can
+    // trace it back to an existing account instead of treating every
+    // submission as an anonymous, unrelated contact.
+    const auth = getAuthUser(req);
 
     const enquiry = await prisma.enquiry.create({
       data: {
+        userId: auth?.role === 'PATIENT' ? auth.userId : undefined,
         name,
         email,
         phone,

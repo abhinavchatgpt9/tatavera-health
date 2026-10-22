@@ -124,12 +124,30 @@ async function askGemini(messages: { role: string; content: string }[]): Promise
   return data?.candidates?.[0]?.content?.parts?.[0]?.text || null;
 }
 
+const MAX_CHAT_MESSAGES = 20;
+const MAX_MESSAGE_LENGTH = 4000;
+
 // ─── Route handler ────────────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
   try {
-    const { messages } = await req.json();
+    const body = await req.json();
+    const messages = body?.messages;
+
     if (!Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json({ error: 'Messages array required' }, { status: 400 });
+    }
+    if (messages.length > MAX_CHAT_MESSAGES) {
+      return NextResponse.json({ error: 'Too many messages in this conversation.' }, { status: 400 });
+    }
+    const wellFormed = messages.every(
+      (m) =>
+        m &&
+        (m.role === 'user' || m.role === 'assistant') &&
+        typeof m.content === 'string' &&
+        m.content.length <= MAX_MESSAGE_LENGTH
+    );
+    if (!wellFormed) {
+      return NextResponse.json({ error: 'Invalid message format.' }, { status: 400 });
     }
 
     const lastUser = [...messages].reverse().find((m: { role: string }) => m.role === 'user');

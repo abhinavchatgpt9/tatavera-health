@@ -2,6 +2,7 @@ import 'server-only';
 
 import { prisma } from '@/lib/prisma';
 import type { PortalSession } from '@/lib/portal-session';
+import { getConsultAttachmentUrl } from '@/lib/consult-attachment';
 
 /**
  * Read-side data access for the five portals.
@@ -723,6 +724,30 @@ export async function getAdminUsers(role?: string) {
   }));
 }
 
+export async function getStaffApplications(status?: string) {
+  const applications = await prisma.staffApplication.findMany({
+    where: status && status !== 'ALL' ? { status: status as 'PENDING' | 'APPROVED' | 'REJECTED' } : undefined,
+    orderBy: { createdAt: 'desc' },
+  });
+
+  return applications.map((a) => ({
+    id: a.id,
+    requestedRole: a.requestedRole,
+    name: a.name,
+    email: a.email,
+    phone: a.phone,
+    organizationName: a.organizationName,
+    city: a.city,
+    country: a.country,
+    specialtyOrType: a.specialtyOrType,
+    message: a.message,
+    status: a.status,
+    reviewNote: a.reviewNote,
+    createdAt: a.createdAt.toISOString(),
+    reviewedAt: a.reviewedAt ? a.reviewedAt.toISOString() : null,
+  }));
+}
+
 export async function getAdminAuditLogs(limit = 100) {
   const logs = await prisma.auditLog.findMany({
     include: { user: { select: { name: true } } },
@@ -1020,12 +1045,25 @@ export async function getAdminPayments() {
 
 export async function getAdminEnquiries() {
   const enquiries = await prisma.enquiry.findMany({
-    include: { treatment: { select: { name: true } }, lead: { select: { id: true } } },
+    include: {
+      treatment: { select: { name: true } },
+      lead: { select: { id: true } },
+      user: { select: { id: true, name: true } },
+    },
     orderBy: { createdAt: 'desc' },
     take: 200,
   });
 
-  return enquiries.map((e) => ({
+  const withAttachmentUrls = await Promise.all(
+    enquiries.map(async (e) => ({
+      ...e,
+      // Signed URL is regenerated on every load rather than stored, same
+      // pattern as Report.fileUrl, so it never goes stale (1h expiry).
+      attachmentUrl: e.attachmentKey ? await getConsultAttachmentUrl(e.attachmentKey) : null,
+    }))
+  );
+
+  return withAttachmentUrls.map((e) => ({
     id: e.id,
     name: e.name,
     email: e.email,
@@ -1036,6 +1074,12 @@ export async function getAdminEnquiries() {
     status: e.status,
     source: e.source,
     converted: Boolean(e.lead),
+    // Set when this submission came from a logged-in Patient account, so
+    // admins can see it's tied to an existing user instead of an anonymous lead.
+    existingPatient: e.user ? { id: e.user.id, name: e.user.name } : null,
+    attachment: e.attachmentKey
+      ? { name: e.attachmentName, size: e.attachmentSize, url: e.attachmentUrl }
+      : null,
     createdAt: e.createdAt.toISOString(),
   }));
 }

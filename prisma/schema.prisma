@@ -592,6 +592,14 @@ model Enquiry {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
+  // Optional patient-uploaded attachment (e.g. previous medical history) from
+  // the consultation form. Only the S3 object key is durable — the signed
+  // download URL is regenerated on read (see getAdminEnquiries), same pattern
+  // as Report.fileUrl, so it never goes stale.
+  attachmentKey  String?
+  attachmentName String?
+  attachmentSize Int?
+
   user      User?      @relation(fields: [userId], references: [id])
   treatment Treatment? @relation(fields: [treatmentId], references: [id])
   lead      Lead?
@@ -814,4 +822,38 @@ model AuditLog {
   @@index([userId])
   @@index([entityType, entityId])
   @@index([createdAt])
+}
+
+// ─── STAFF APPLICATIONS (doctor / hospital self-signup) ──────────────────────
+
+enum StaffApplicationRole {
+  DOCTOR
+  HOSPITAL_ADMIN
+}
+
+enum StaffApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model StaffApplication {
+  id               String                  @id @default(cuid())
+  requestedRole    StaffApplicationRole
+  name             String
+  email            String
+  phone            String
+  organizationName String
+  city             String?
+  country          String?
+  specialtyOrType  String?
+  message          String?                 @db.Text
+  status           StaffApplicationStatus  @default(PENDING)
+  reviewedById     String?
+  reviewNote       String?
+  createdAt        DateTime                @default(now())
+  reviewedAt       DateTime?
+
+  @@index([status])
+  @@index([email])
 }

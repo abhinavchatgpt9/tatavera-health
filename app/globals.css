@@ -32,6 +32,28 @@
   ::selection {
     @apply bg-blue-500 text-white;
   }
+
+  /*
+   * Sitewide safety net: many forms (login, signup, contact, etc.) write
+   * their own input classNames without an explicit text/background color,
+   * so they silently inherit <body>'s color — text-slate-100 (near white)
+   * in dark mode. On a form field that's still rendered with a white
+   * background, that makes typed text invisible. This sets a sane default
+   * for every plain text-like field; any component's own bg- or text-color
+   * utility classes still win, since Tailwind utilities load after base.
+   */
+  input[type='text'],
+  input[type='email'],
+  input[type='password'],
+  input[type='tel'],
+  input[type='number'],
+  input[type='url'],
+  input[type='search'],
+  input[type='date'],
+  textarea,
+  select {
+    @apply bg-white text-slate-900 placeholder-slate-400 dark:bg-slate-900 dark:text-slate-100 dark:placeholder-slate-500;
+  }
 }
 
 /* ─── Component layer: reusable utility classes ─── */

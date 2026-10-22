@@ -57,16 +57,19 @@ export default function DoctorLayout({ children }: { children: React.ReactNode }
         <Link href="/" className="flex items-center gap-2">
           <BrandLogo theme="light" />
         </Link>
-        <div className="flex gap-1.5 overflow-x-auto">
-          {NAV.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex-shrink-0 p-2 rounded-lg text-base ${pathname === item.href ? 'bg-blue-50 text-blue-600' : 'text-gray-500'}`}
-            >
-              {item.emoji}
-            </Link>
-          ))}
+        <div className="flex items-center gap-1 min-w-0">
+          <div className="flex gap-1.5 overflow-x-auto">
+            {NAV.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex-shrink-0 p-2 rounded-lg text-base ${pathname === item.href ? 'bg-blue-50 text-blue-600' : 'text-gray-500'}`}
+              >
+                {item.emoji}
+              </Link>
+            ))}
+          </div>
+          <LogoutButton iconOnly className="flex-shrink-0 p-2 rounded-lg text-base text-red-500" />
         </div>
       </div>
 

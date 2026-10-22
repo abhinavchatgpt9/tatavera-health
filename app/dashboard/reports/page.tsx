@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 
 type Report = {
   id: string;
   fileName: string;
+  fileUrl: string;
   fileSize: number;
   category: string;
   createdAt: string;
@@ -15,30 +16,78 @@ const CATEGORIES = ['Blood Reports', 'Imaging', 'Prescriptions', 'Other'];
 
 export default function ReportsPage() {
   const [reports, setReports] = useState<Report[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Other');
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const loadReports = useCallback(async () => {
+    setLoading(true);
+    setLoadError(false);
+    try {
+      const res = await fetch('/api/reports', { credentials: 'include' });
+      if (!res.ok) throw new Error('failed');
+      const data = await res.json();
+      setReports(data.reports ?? []);
+    } catch {
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadReports();
+  }, [loadReports]);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
     setUploading(true);
+    setUploadError('');
 
     const formData = new FormData();
     formData.append('file', files[0]);
     formData.append('category', selectedCategory);
 
     try {
-      const res = await fetch('/api/reports', { method: 'POST', body: formData });
-      if (res.ok) {
-        const data = await res.json();
+      const res = await fetch('/api/reports', { method: 'POST', body: formData, credentials: 'include' });
+      const data = await res.json();
+      if (res.ok && data.success) {
         setReports((prev) => [data.report, ...prev]);
+      } else {
+        setUploadError(data.message || 'Upload failed. Please try again.');
       }
     } catch {
-      alert('Upload failed. Please try again.');
+      setUploadError('Network error. Please try again.');
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    const prev = reports;
+    setReports((current) => current.filter((r) => r.id !== id));
+    try {
+      const res = await fetch(`/api/reports/${id}`, { method: 'DELETE', credentials: 'include' });
+      if (!res.ok) throw new Error('failed');
+    } catch {
+      setReports(prev);
+      alert('Could not delete this report. Please try again.');
+    }
+  };
+
+  const handleShare = async (report: Report) => {
+    try {
+      await navigator.clipboard.writeText(report.fileUrl);
+      setCopiedId(report.id);
+      setTimeout(() => setCopiedId((current) => (current === report.id ? null : current)), 2000);
+    } catch {
+      alert('Could not copy the link. Long-press or right-click the Download link to copy it manually.');
     }
   };
 
@@ -82,47 +131,61 @@ export default function ReportsPage() {
               />
             </label>
           </div>
+          {uploadError && <p className="text-red-500 text-sm mt-3">{uploadError}</p>}
         </div>
 
-        {/* Reports list by category */}
-        {CATEGORIES.map((cat) => {
-          const catReports = reports.filter((r) => r.category === cat);
-          if (catReports.length === 0 && reports.length > 0) return null;
-          return (
-            <div key={cat} className="mb-6">
-              <h2 className="font-bold text-gray-900 mb-3">{cat}</h2>
-              {catReports.length === 0 ? (
-                <div className="bg-white border border-gray-100 rounded-xl p-5 text-center text-gray-400 text-sm">
-                  No {cat.toLowerCase()} uploaded yet.
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {catReports.map((report) => (
-                    <div key={report.id} className="flex items-center gap-4 bg-white border border-gray-100 rounded-xl p-4">
-                      <span className="text-2xl flex-shrink-0">📄</span>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-gray-900 truncate">{report.fileName}</p>
-                        <p className="text-xs text-gray-400">{formatSize(report.fileSize)} · {new Date(report.createdAt).toLocaleDateString()}</p>
-                      </div>
-                      <div className="flex gap-2">
-                        <a href="#" className="text-xs text-blue-600 hover:underline font-medium">View</a>
-                        <a href="#" className="text-xs text-blue-600 hover:underline font-medium">Download</a>
-                        <button className="text-xs text-green-600 hover:underline font-medium">Share</button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        })}
+        {loading && (
+          <div className="space-y-2">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="h-[68px] bg-gray-100 rounded-xl animate-pulse" />
+            ))}
+          </div>
+        )}
 
-        {reports.length === 0 && (
+        {!loading && loadError && (
+          <div className="text-center py-10 bg-red-50 border border-red-100 rounded-xl">
+            <p className="text-red-600 font-medium mb-2">Couldn&apos;t load your reports.</p>
+            <button onClick={loadReports} className="text-sm text-blue-600 hover:underline font-medium">
+              Try again
+            </button>
+          </div>
+        )}
+
+        {!loading && !loadError && reports.length === 0 && (
           <div className="text-center py-12 text-gray-400">
             <p className="text-4xl mb-3">🗂️</p>
             <p>No reports uploaded yet. Upload your first report above.</p>
           </div>
         )}
+
+        {!loading && !loadError && reports.length > 0 && CATEGORIES.map((cat) => {
+          const catReports = reports.filter((r) => r.category === cat);
+          if (catReports.length === 0) return null;
+          return (
+            <div key={cat} className="mb-6">
+              <h2 className="font-bold text-gray-900 mb-3">{cat}</h2>
+              <div className="space-y-2">
+                {catReports.map((report) => (
+                  <div key={report.id} className="flex items-center gap-4 bg-white border border-gray-100 rounded-xl p-4">
+                    <span className="text-2xl flex-shrink-0">📄</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-900 truncate">{report.fileName}</p>
+                      <p className="text-xs text-gray-400">{formatSize(report.fileSize)} · {new Date(report.createdAt).toLocaleDateString()}</p>
+                    </div>
+                    <div className="flex gap-3 flex-shrink-0">
+                      <a href={report.fileUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline font-medium">View</a>
+                      <a href={report.fileUrl} download={report.fileName} className="text-xs text-blue-600 hover:underline font-medium">Download</a>
+                      <button onClick={() => handleShare(report)} className="text-xs text-green-600 hover:underline font-medium">
+                        {copiedId === report.id ? 'Copied!' : 'Share'}
+                      </button>
+                      <button onClick={() => handleDelete(report.id)} className="text-xs text-red-500 hover:underline font-medium">Delete</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </DashboardLayout>
   );
