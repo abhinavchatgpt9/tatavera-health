@@ -12,6 +12,7 @@ const FLAG_EMOJIS: Record<string, string> = {
 };
 
 export default function Testimonials() {
+  if (TESTIMONIALS.length === 0) return null;
   return (
     <section id="testimonials" className="py-20 bg-slate-50 dark:bg-slate-900 relative overflow-hidden">
       {/* Decorative background */}
@@ -23,7 +24,7 @@ export default function Testimonials() {
           <span className="section-label">Patient Stories</span>
           <h2 className="section-title">Real Patients. Real Transformations.</h2>
           <p className="section-subtitle">
-            Over 15,000 patients have trusted Tatavera Health for life-changing treatment — at a fraction of the cost.
+            Stories from patients who have chosen to share their experience.
           </p>
         </AnimateIn>
 

@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { SITE_NAME, CONTACT_EMAIL, CONTACT_PHONE, WHATSAPP_NUMBER } from '@/lib/constants';
+import BrandLogo from '@/components/BrandLogo';
+import { SITE_NAME, SITE_TAGLINE, CONTACT_EMAIL, CONTACT_PHONE, WHATSAPP_NUMBER } from '@/lib/constants';
 
 const FOOTER_LINKS = {
   Treatments: [
@@ -22,7 +23,7 @@ const FOOTER_LINKS = {
     { label: 'About Us', href: '/about' },
     { label: 'Our Services', href: '/services' },
     { label: 'How It Works', href: '/how-it-works' },
-    { label: 'Why Tatavera', href: '/why-choose-us' },
+    { label: 'Why Tatvavera', href: '/why-choose-us' },
     { label: 'FAQ', href: '/faq' },
     { label: 'Patient Stories', href: '/patient-stories' },
     { label: 'Blog & Resources', href: '/blog' },
@@ -64,16 +65,14 @@ export default function Footer() {
           {/* Brand column */}
           <div className="col-span-2 md:col-span-3 lg:col-span-1">
             <Link href="/" className="flex items-center gap-2.5 mb-5 group">
-              <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center shadow-md group-hover:shadow-blue-500/30 transition-shadow">
-                <span className="text-white font-bold text-base">T</span>
-              </div>
-              <span className="font-bold text-lg text-white">{SITE_NAME}</span>
+              <BrandLogo theme="dark" />
             </Link>
             <p className="text-sm text-slate-400 leading-relaxed mb-5">
-              Connecting patients worldwide with top-accredited hospitals and expert doctors. All services are free for patients.
+              {SITE_TAGLINE}
             </p>
 
             <div className="space-y-2 text-sm">
+              <a href="https://www.instagram.com/tatvaverahealth/" target="_blank" rel="noopener noreferrer" className="block text-slate-400 hover:text-white transition-colors">Instagram</a>
               <a href={`mailto:${CONTACT_EMAIL}`} className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors">
                 <span>✉️</span> {CONTACT_EMAIL}
               </a>

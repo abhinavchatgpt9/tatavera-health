@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { CalendarCheck, MessageCircle, Search, ShieldCheck, Wallet, Globe2, Sparkles } from 'lucide-react';
+import { CalendarCheck, MessageCircle, Search, ShieldCheck, Wallet, Globe2 } from 'lucide-react';
 import { SITE_TAGLINE, QUICK_LINKS, WHATSAPP_NUMBER } from '@/lib/constants';
 import { Button } from '@/components/ui/Button';
 import { motion, MagneticButton } from '@/components/ui/motion';
@@ -11,7 +11,6 @@ import AppointmentModal from '@/components/AppointmentModal';
 const TRUST_PILLS = [
   { icon: ShieldCheck, label: 'JCI Accredited Hospitals' },
   { icon: Wallet, label: '100% Free for Patients' },
-  { icon: Globe2, label: '125+ Countries Served' },
 ];
 
 const container = {
@@ -73,19 +72,14 @@ export default function Hero() {
           variants={container}
           className="relative mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8"
         >
-          {/* Live activity pill with glow */}
-          <motion.div variants={item} className="mb-7 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-4 py-2 text-sm font-medium text-white shadow-[0_0_20px_-4px_rgba(59,130,246,0.5)] backdrop-blur-md">
-            <Sparkles className="h-3.5 w-3.5 text-blue-400" aria-hidden="true" />
-            Trusted by <strong className="font-semibold">100,000+</strong> patients worldwide · Response in &lt; 2 hours
-          </motion.div>
 
           <motion.h1 variants={item} className="mb-5 bg-gradient-to-b from-white to-slate-300 bg-clip-text text-4xl font-extrabold leading-tight text-transparent md:text-5xl lg:text-6xl">
             {SITE_TAGLINE}
           </motion.h1>
 
           <motion.p variants={item} className="mx-auto mb-9 max-w-2xl text-lg text-slate-300 md:text-xl">
-            Save up to <strong className="text-white">90% on medical costs</strong> while receiving world-class treatment at JCI-accredited hospitals in India, Turkey &amp; beyond.
-            <span className="text-slate-400"> Free consultation. Dedicated case manager. End-to-end support.</span>
+            We coordinate your treatment journey between <strong className="text-white">Kenya and India</strong>, starting with orthopaedic and spine care.
+            <span className="text-slate-400"> Share your case and our team will guide you through the next steps.</span>
           </motion.p>
 
           {/* CTAs */}

@@ -48,6 +48,10 @@ export default function DoctorsClient({ specialtyFilter }: DoctorsClientProps) {
         </p>
       )}
 
+      {filtered.length === 0 && (
+        <p className="text-center py-16 text-slate-500 dark:text-slate-400">Doctor profiles will be listed here once confirmed.</p>
+      )}
+
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
         {filtered.map((doctor) => (
           <div key={doctor.slug} className="flashcard group p-5 flex flex-col">

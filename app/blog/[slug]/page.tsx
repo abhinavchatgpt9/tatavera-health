@@ -10,7 +10,7 @@ type Props = { params: { slug: string } };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = BLOG_POSTS.find((p) => p.slug === params.slug);
   if (!post) return {};
-  return { title: `${post.title} | Tatavera Health`, description: post.excerpt };
+  return { title: `${post.title} | Tatvavera Health`, description: post.excerpt };
 }
 
 export function generateStaticParams() {
@@ -47,11 +47,11 @@ export default function BlogArticlePage({ params }: Props) {
             <p className="text-xl text-gray-600">{post.excerpt}</p>
             <p>Medical tourism has grown exponentially over the last decade, with millions of patients choosing to travel abroad for treatments that are either unavailable, unaffordable, or subject to long waiting times in their home countries. This guide covers everything you need to know to plan a safe and successful medical journey.</p>
             <h2 className="text-2xl font-bold text-gray-900 mt-8">Key Considerations</h2>
-            <p>Before choosing a hospital or doctor abroad, it&apos;s essential to verify accreditation status, surgeon credentials, and outcomes data. Our team at Tatavera Health vets every partner hospital and doctor on your behalf.</p>
+            <p>Before choosing a hospital or doctor abroad, it&apos;s essential to verify accreditation status, surgeon credentials, and outcomes data. Our team at Tatvavera Health vets every partner hospital and doctor on your behalf.</p>
             <h2 className="text-2xl font-bold text-gray-900 mt-8">Cost Savings</h2>
             <p>Patients typically save 60-85% compared to Western pricing, without compromising on quality. All our partner hospitals hold JCI or NABH accreditation — the same international standards as leading Western hospitals.</p>
             <h2 className="text-2xl font-bold text-gray-900 mt-8">Planning Your Journey</h2>
-            <p>Tatavera Health handles everything — from initial case review and hospital matching to visa assistance, airport transfers, accommodation, and post-treatment follow-up. Our service is completely free for patients.</p>
+            <p>Tatvavera Health handles everything — from initial case review and hospital matching to visa assistance, airport transfers, accommodation, and post-treatment follow-up. Our service is completely free for patients.</p>
           </div>
 
           {/* CTA */}

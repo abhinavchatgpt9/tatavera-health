@@ -1,6 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import { DataTable, type Column } from '@/components/portal/DataTable';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/Dialog';
 import { Pill, formatDate, formatDateTime, formatMoney } from '@/components/portal/PortalPage';
 import { LEAD_STAGE_LABELS, LEAD_STAGE_COLORS, CASE_STATUS_LABELS, CASE_STATUS_COLORS } from '@/lib/lead-stage';
 import { LEAD_STAGE_ORDER } from './shared';
@@ -919,23 +921,94 @@ const enquiryColumns: Array<Column<Enquiry>> = [
   },
 ];
 
-export function AdminEnquiriesTable({ rows }: { rows: Enquiry[] }) {
+/** The public form stores "[Treatment: knee-replacement] free text…" in the message field. */
+function splitEnquiryMessage(message: string | null) {
+  const m = message?.match(/^\[Treatment:\s*([^\]]+)\]\s*(.*)$/s);
+  return m ? { treatment: m[1].trim(), text: m[2].trim() } : { treatment: null, text: message?.trim() ?? '' };
+}
+
+function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <DataTable
-      rows={rows}
-      columns={enquiryColumns}
-      searchIn={(e) => `${e.name} ${e.email} ${e.phone} ${e.country} ${e.treatment} ${e.message ?? ''}`}
-      searchPlaceholder="Search by name, email, country or treatment…"
-      filter={{
-        label: 'All statuses',
-        options: Object.keys(ENQUIRY_STATUS_COLORS).map((value) => ({
-          value,
-          label: value.charAt(0) + value.slice(1).toLowerCase().replace(/_/g, ' '),
-        })),
-        matches: (e, value) => e.status === value,
-      }}
-      emptyTitle="No enquiries yet"
-      emptyDescription="Enquiries submitted through the public site's forms land here first."
-    />
+    <div className="grid grid-cols-3 gap-3 py-2.5 text-sm">
+      <dt className="text-slate-500 dark:text-slate-400">{label}</dt>
+      <dd className="col-span-2 break-words text-slate-900 dark:text-white">{children}</dd>
+    </div>
+  );
+}
+
+export function AdminEnquiriesTable({ rows }: { rows: Enquiry[] }) {
+  const [selected, setSelected] = useState<Enquiry | null>(null);
+  const detail = selected ? splitEnquiryMessage(selected.message) : null;
+  const whatsappDigits = selected?.phone.replace(/\D/g, '');
+
+  return (
+    <>
+      <DataTable
+        rows={rows}
+        columns={enquiryColumns}
+        onRowClick={setSelected}
+        searchIn={(e) => `${e.name} ${e.email} ${e.phone} ${e.country} ${e.treatment} ${e.message ?? ''}`}
+        searchPlaceholder="Search by name, email, country or treatment…"
+        filter={{
+          label: 'All statuses',
+          options: Object.keys(ENQUIRY_STATUS_COLORS).map((value) => ({
+            value,
+            label: value.charAt(0) + value.slice(1).toLowerCase().replace(/_/g, ' '),
+          })),
+          matches: (e, value) => e.status === value,
+        }}
+        emptyTitle="No enquiries yet"
+        emptyDescription="Enquiries submitted through the public site's forms land here first."
+      />
+
+      <Dialog open={selected !== null} onOpenChange={(open) => !open && setSelected(null)}>
+        <DialogContent className="max-w-xl">
+          {selected && detail && (
+            <>
+              <DialogHeader>
+                <DialogTitle>{selected.name}</DialogTitle>
+                <DialogDescription>Enquiry received {formatDateTime(selected.createdAt)}</DialogDescription>
+              </DialogHeader>
+              <dl className="divide-y divide-slate-100 dark:divide-slate-800">
+                <DetailRow label="Status">
+                  <div className="flex flex-wrap gap-1.5">
+                    <Pill className={ENQUIRY_STATUS_COLORS[selected.status] ?? 'bg-slate-100 text-slate-700'}>
+                      {selected.status.replace(/_/g, ' ')}
+                    </Pill>
+                    {selected.converted && <Pill className="bg-emerald-100 text-emerald-700">Lead created</Pill>}
+                  </div>
+                </DetailRow>
+                <DetailRow label="Email">
+                  <a className="text-blue-600 hover:underline dark:text-blue-400" href={`mailto:${selected.email}`}>
+                    {selected.email}
+                  </a>
+                </DetailRow>
+                <DetailRow label="Phone">
+                  <a className="text-blue-600 hover:underline dark:text-blue-400" href={`tel:${selected.phone}`}>
+                    {selected.phone}
+                  </a>
+                  {whatsappDigits && (
+                    <a
+                      className="ml-3 text-emerald-600 hover:underline dark:text-emerald-400"
+                      href={`https://wa.me/${whatsappDigits}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      WhatsApp
+                    </a>
+                  )}
+                </DetailRow>
+                <DetailRow label="Country">{selected.country}</DetailRow>
+                <DetailRow label="Treatment">{detail.treatment ?? (selected.treatment !== '—' ? selected.treatment : '—')}</DetailRow>
+                <DetailRow label="Message">
+                  <p className="whitespace-pre-wrap">{detail.text || '—'}</p>
+                </DetailRow>
+                <DetailRow label="Source">{selected.source ?? 'Website'}</DetailRow>
+              </dl>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

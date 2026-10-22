@@ -17,7 +17,7 @@ const INITIAL_MESSAGE: Message = {
   role: 'assistant',
   id: 'init',
   content:
-    "Hi! I'm Aria, your Tatavera Health assistant 👋\n\nI can help you with treatment costs, hospital recommendations, visa information, and planning your medical journey.\n\nWhat would you like to know?",
+    "Hi! I'm Aria, your Tatvavera Health assistant 👋\n\nI can help you with treatment costs, hospital recommendations, visa information, and planning your medical journey.\n\nWhat would you like to know?",
 };
 
 export default function AIChatbot() {

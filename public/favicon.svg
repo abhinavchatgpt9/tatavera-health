@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="440" height="440" viewBox="0 0 440 440" role="img" aria-labelledby="logo-title logo-desc" version="1.1"><title id="logo-title">Tatvavera Health</title><desc id="logo-desc">Tatvavera Health v2; favicon layout; preserved blue vector artwork. Lettering is outlined. No embedded images, fonts or external dependencies.</desc><defs>
+  <linearGradient id="stem-blue" x1="590" y1="243" x2="725" y2="573" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#032981" /><stop offset="0.4" stop-color="#043498" /><stop offset="0.72" stop-color="#0950d5" /><stop offset="1" stop-color="#1765ff" />
+  </linearGradient>
+  <radialGradient id="stem-highlight" cx="749" cy="557" r="48" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#e1efff" stop-opacity=".95" /><stop offset=".48" stop-color="#badbff" stop-opacity=".57" /><stop offset="1" stop-color="#75adff" stop-opacity="0" />
+  </radialGradient>
+  <linearGradient id="top-blue" x1="774" y1="253" x2="914" y2="312" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#02257e" /><stop offset="1" stop-color="#032985" />
+  </linearGradient>
+  <linearGradient id="ribbon-blue" x1="726" y1="268" x2="759" y2="475" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#1761f3" /><stop offset=".34" stop-color="#488aff" /><stop offset=".68" stop-color="#91bdff" /><stop offset="1" stop-color="#e2edff" />
+  </linearGradient>
+  <radialGradient id="ribbon-highlight" cx="756" cy="398" r="78" gradientTransform="translate(0 -239) scale(1 1.6)" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#f4f8ff" stop-opacity=".8" /><stop offset="1" stop-color="#b7d4ff" stop-opacity="0" />
+  </radialGradient>
+  <linearGradient id="leaf-blue" x1="785" y1="376" x2="869" y2="431" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#032985" /><stop offset="1" stop-color="#042582" />
+  </linearGradient>
+  <path id="stem-outline" d="M532.5 242.5H744C715 257 695 280 689 311C681 350 697 381 714 418C730 451 743 472 742 494C741 515 737 535 735 546C733 558 725 568 715 572.5H669.5V312.5H532.5Z" />
+  <path id="ribbon-outline" d="M816 242.5C780 243 750 260 731 287C716 308 709 330 711 348C713 374 729 402 740 427C750 450 756 464 759.5 480V312C759.5 278 769 251 791 245Z" />
+</defs>
+<rect id="background" width="440" height="440" fill="#ffffff" /><g id="symbol-placement" transform="translate(-503.5 -187.5)"><g id="symbol" aria-label="Blue T and leaf">
+  <use xlink:href="#stem-outline" fill="url(#stem-blue)" />
+  <use xlink:href="#stem-outline" fill="url(#stem-highlight)" />
+  <path d="M816 242.5H914.5V312.5H759.5V297C759.5 267 775 243 816 242.5Z" fill="url(#top-blue)" />
+  <use xlink:href="#ribbon-outline" fill="url(#ribbon-blue)" />
+  <use xlink:href="#ribbon-outline" fill="url(#ribbon-highlight)" />
+  <path d="M769 445C776 403 790 377 815 365C834 355 868 356 893.5 347C890 377 883 402 867 417C846 437 815 448 779 441C794 423 816 401 838 386C808 399 786 420 769 445Z" fill="url(#leaf-blue)" />
+</g>
+</g></svg>

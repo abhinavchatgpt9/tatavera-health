@@ -10,7 +10,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { SPECIALTIES, PROCEDURES } from '@/lib/constants';
 
 export const metadata: Metadata = {
-  title: 'Find Your Treatment | Tatavera Health',
+  title: 'Find Your Treatment | Tatvavera Health',
   description: 'Browse all treatments available abroad — cardiac surgery, orthopedics, oncology, IVF, transplants and more. Get a free cost estimate.',
 };
 

@@ -6,7 +6,7 @@ import WhyChooseUs from '@/components/WhyChooseUs';
 import TrustStats from '@/components/TrustStats';
 
 export const metadata: Metadata = {
-  title: 'Why Choose Tatavera Health',
+  title: 'Why Choose Tatvavera Health',
   description: 'Accredited hospitals, transparent pricing, multilingual support, and 100% free services for patients.',
 };
 
@@ -17,7 +17,7 @@ export default function WhyChooseUsPage() {
       <main>
         <section className="bg-gradient-to-br from-blue-50 to-white dark:from-slate-900 dark:to-slate-950 py-12 border-b border-slate-100 dark:border-slate-800">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h1 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-3">Why choose Tatavera</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-3">Why choose Tatvavera</h1>
             <p className="text-slate-600 dark:text-slate-400">
               We vet every hospital, stay transparent on pricing, and never charge patients for coordination.
             </p>

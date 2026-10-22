@@ -7,8 +7,8 @@ import FeaturedDoctors from '@/components/FeaturedDoctors';
 import Testimonials from '@/components/Testimonials';
 
 export const metadata: Metadata = {
-  title: 'Spotlight — Hospitals, Doctors & Reviews | Tatavera Health',
-  description: 'Featured partner hospitals, expert doctors, and what patients say about care abroad with Tatavera.',
+  title: 'Spotlight — Hospitals, Doctors & Reviews | Tatvavera Health',
+  description: 'Featured partner hospitals, expert doctors, and what patients say about care abroad with Tatvavera.',
 };
 
 export default function SpotlightPage() {

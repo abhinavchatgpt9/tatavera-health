@@ -1,10 +1,9 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { SITE_NAME, SITE_DESCRIPTION, SITE_TAGLINE, SITE_URL } from '@/lib/constants';
+import { Analytics } from '@vercel/analytics/next';
 import ThemeProvider from '@/components/ThemeProvider';
 import WhatsAppWidget from '@/components/WhatsAppWidget';
-import AIChatbot from '@/components/AIChatbot';
-import SocialProofNotification from '@/components/SocialProofNotification';
 import StickyMobileCTA from '@/components/StickyMobileCTA';
 
 export const viewport: Viewport = {
@@ -49,6 +48,8 @@ const SCHEMA_ORG = {
   name: SITE_NAME,
   description: SITE_DESCRIPTION,
   url: SITE_URL,
+  logo: `${SITE_URL}/brand/Tatvavera-Header-Transparent.svg`,
+  sameAs: ['https://www.instagram.com/tatvaverahealth/'],
   areaServed: 'Worldwide',
   medicalSpecialty: ['Cardiology', 'Orthopedic Surgery', 'Oncology', 'Neurology', 'IVF'],
 };
@@ -69,8 +70,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className="scroll-smooth" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
-        <meta name="theme-color" content="#2563eb" />
-        <link rel="icon" href="/favicon.ico" />
+        <meta name="theme-color" content="#032981" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="alternate icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/site.webmanifest" />
         {/* Anti-flash: must be first script in head */}
         <script dangerouslySetInnerHTML={{ __html: ANTI_FLASH_SCRIPT }} />
@@ -80,8 +83,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider>
           {children}
           <WhatsAppWidget />
-          <AIChatbot />
-          <SocialProofNotification />
+          <Analytics />
           <StickyMobileCTA />
         </ThemeProvider>
       </body>

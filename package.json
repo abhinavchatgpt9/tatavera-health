@@ -1,7 +1,7 @@
 {
   "name": "tatavera-health",
   "version": "2.0.0",
-  "description": "Tatavera Health - Full Medical Tourism Platform",
+  "description": "Tatvavera Health - Full Medical Tourism Platform",
   "private": true,
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
@@ -22,6 +22,8 @@
     "db:seed": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' prisma/seed.ts"
   },
   "dependencies": {
+    "@vercel/analytics": "^1.5.0",
+    "libphonenumber-js": "^1.12.0",
     "@anthropic-ai/sdk": "^0.95.1",
     "@aws-sdk/client-s3": "^3.590.0",
     "@aws-sdk/s3-request-presigner": "^3.590.0",

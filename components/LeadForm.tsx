@@ -3,11 +3,15 @@
 import { useState, FormEvent, ChangeEvent } from 'react';
 import { PROCEDURES } from '@/lib/constants';
 import AnimateIn from '@/components/AnimateIn';
+import PhoneInput from '@/components/PhoneInput';
+import { COUNTRY_OPTIONS, countryName, validatePhone } from '@/lib/phone';
+import type { CountryCode } from 'libphonenumber-js/max';
 
 interface FormData {
   name: string;
   email: string;
   phone: string;
+  phoneCountry: CountryCode;
   country: string;
   procedure: string;
   message: string;
@@ -18,8 +22,9 @@ interface FormErrors { [key: string]: string; }
 
 export default function LeadForm() {
   const [formData, setFormData] = useState<FormData>({
-    name: '', email: '', phone: '', country: '', procedure: '', message: '', agreeTerms: false,
+    name: '', email: '', phone: '', phoneCountry: 'KE', country: '', procedure: '', message: '', agreeTerms: false,
   });
+  const [phoneCodeTouched, setPhoneCodeTouched] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
@@ -27,12 +32,16 @@ export default function LeadForm() {
 
   const validate = (): boolean => {
     const e: FormErrors = {};
-    if (!formData.name.trim()) e.name = 'Name is required';
-    if (!formData.email.trim()) e.email = 'Email is required';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) e.email = 'Please enter a valid email';
-    if (!formData.phone.trim()) e.phone = 'Phone number is required';
-    else if (!/^[\d\s\-\+\(\)]+$/.test(formData.phone)) e.phone = 'Please enter a valid phone number';
+    const name = formData.name.trim();
+    if (!name) e.name = 'Name is required';
+    else if (!/^[\p{L}][\p{L}\s.'’-]{1,99}$/u.test(name)) e.name = 'Enter your full name (letters only, at least 2 characters)';
+    const email = formData.email.trim();
+    if (!email) e.email = 'Email is required';
+    else if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) e.email = 'Please enter a valid email';
+    const phone = validatePhone(formData.phone, formData.phoneCountry);
+    if (!phone.ok) e.phone = phone.message;
     if (!formData.country) e.country = 'Country is required';
+    if (formData.message.length > 2000) e.message = 'Please keep this under 2000 characters';
     if (!formData.procedure) e.procedure = 'Please select a procedure';
     if (!formData.agreeTerms) e.agreeTerms = 'You must agree to the terms';
     setErrors(e);
@@ -48,23 +57,57 @@ export default function LeadForm() {
     if (errors[name]) setErrors((prev) => { const n = { ...prev }; delete n[name]; return n; });
   };
 
+  const handleCountryChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    const iso = e.target.value as CountryCode | '';
+    setFormData((prev) => ({
+      ...prev,
+      country: iso ? countryName(iso) : '',
+      // Follow the residence country for the phone code until the user picks a code themselves.
+      phoneCountry: iso && !phoneCodeTouched ? iso : prev.phoneCountry,
+    }));
+    if (errors.country) setErrors((prev) => { const n = { ...prev }; delete n.country; return n; });
+  };
+
+  const handlePhoneChange = (iso: CountryCode, value: string) => {
+    if (iso !== formData.phoneCountry) setPhoneCodeTouched(true);
+    setFormData((prev) => ({ ...prev, phoneCountry: iso, phone: value }));
+    if (errors.phone) setErrors((prev) => { const n = { ...prev }; delete n.phone; return n; });
+  };
+
+  const validatePhoneOnBlur = () => {
+    if (!formData.phone) return;
+    const r = validatePhone(formData.phone, formData.phoneCountry);
+    setErrors((prev) => { const n = { ...prev }; if (r.ok) delete n.phone; else n.phone = r.message; return n; });
+  };
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSubmitError('');
     if (!validate()) return;
+    const phone = validatePhone(formData.phone, formData.phoneCountry);
+    if (!phone.ok) return;
     setIsSubmitting(true);
     try {
       const response = await fetch('/api/lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          email: formData.email.trim().toLowerCase(),
+          phone: phone.e164,
+          country: formData.country,
+          procedure: formData.procedure,
+          message: formData.message.trim(),
+          agreeTerms: formData.agreeTerms,
+        }),
       });
       if (!response.ok) {
         const err = await response.json();
         throw new Error(err.message || 'Failed to submit form');
       }
       setSubmitSuccess(true);
-      setFormData({ name: '', email: '', phone: '', country: '', procedure: '', message: '', agreeTerms: false });
+      setFormData({ name: '', email: '', phone: '', phoneCountry: 'KE', country: '', procedure: '', message: '', agreeTerms: false });
+      setPhoneCodeTouched(false);
       setTimeout(() => setSubmitSuccess(false), 5000);
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'An error occurred');
@@ -125,27 +168,20 @@ export default function LeadForm() {
               <div className="grid sm:grid-cols-2 gap-5">
                 <div>
                   <label htmlFor="phone" className="label-field">Phone Number</label>
-                  <input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleChange}
-                    placeholder="+1 (555) 123-4567" disabled={isSubmitting}
-                    className={`input-field ${errors.phone ? 'border-red-400' : ''}`} />
-                  {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
+                  <PhoneInput id="phone" iso={formData.phoneCountry} value={formData.phone}
+                    onChange={handlePhoneChange} onBlur={validatePhoneOnBlur}
+                    error={errors.phone} disabled={isSubmitting} />
                 </div>
                 <div>
                   <label htmlFor="country" className="label-field">Country</label>
-                  <select id="country" name="country" value={formData.country} onChange={handleChange}
-                    disabled={isSubmitting}
+                  <select id="country" name="country"
+                    value={COUNTRY_OPTIONS.find((c) => c.name === formData.country)?.iso ?? ''}
+                    onChange={handleCountryChange} disabled={isSubmitting}
                     className={`input-field ${errors.country ? 'border-red-400' : ''}`}>
                     <option value="">Select your country</option>
-                    <option value="USA">United States</option>
-                    <option value="UK">United Kingdom</option>
-                    <option value="Canada">Canada</option>
-                    <option value="Australia">Australia</option>
-                    <option value="Nigeria">Nigeria</option>
-                    <option value="Kenya">Kenya</option>
-                    <option value="UAE">UAE</option>
-                    <option value="Kuwait">Kuwait</option>
-                    <option value="Saudi Arabia">Saudi Arabia</option>
-                    <option value="Other">Other</option>
+                    {COUNTRY_OPTIONS.map((c) => (
+                      <option key={c.iso} value={c.iso}>{c.flag} {c.name}</option>
+                    ))}
                   </select>
                   {errors.country && <p className="text-red-500 text-xs mt-1">{errors.country}</p>}
                 </div>
@@ -171,7 +207,9 @@ export default function LeadForm() {
                 <textarea id="message" name="message" value={formData.message} onChange={handleChange}
                   placeholder="Tell us about your medical condition, symptoms, or any questions..."
                   rows={3} disabled={isSubmitting}
+                  maxLength={2000}
                   className="input-field resize-none" />
+                {errors.message && <p className="text-red-500 text-xs mt-1">{errors.message}</p>}
               </div>
 
               <div className="flex items-start gap-3">
@@ -183,7 +221,7 @@ export default function LeadForm() {
                   <a href="#" className="text-blue-600 dark:text-blue-400 hover:underline font-semibold">Privacy Policy</a>
                   {' '}and{' '}
                   <a href="#" className="text-blue-600 dark:text-blue-400 hover:underline font-semibold">Terms of Service</a>.
-                  {' '}Tatavera Health may contact me via email or phone.
+                  {' '}Tatvavera Health may contact me via email or phone.
                 </label>
               </div>
               {errors.agreeTerms && <p className="text-red-500 text-xs -mt-3">{errors.agreeTerms}</p>}

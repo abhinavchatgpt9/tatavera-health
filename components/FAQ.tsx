@@ -16,7 +16,7 @@ export default function FAQ() {
           <span className="section-label">FAQ</span>
           <h2 className="section-title">Frequently Asked Questions</h2>
           <p className="section-subtitle">
-            Everything you need to know about medical tourism with Tatavera Health.
+            Everything you need to know about medical tourism with Tatvavera Health.
           </p>
         </AnimateIn>
 

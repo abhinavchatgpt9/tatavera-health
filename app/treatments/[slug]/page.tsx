@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const procedure = PROCEDURES.find((p) => p.slug === params.slug);
   if (!procedure) return {};
   return {
-    title: `${procedure.name} Abroad | Cost & Hospitals | Tatavera Health`,
+    title: `${procedure.name} Abroad | Cost & Hospitals | Tatvavera Health`,
     description: `Get ${procedure.name} abroad from $${procedure.costFrom.toLocaleString()}. Compare top hospitals, doctors, recovery time and get a free quote.`,
   };
 }
@@ -103,6 +103,7 @@ export default function TreatmentDetailPage({ params }: Props) {
               </section>
 
               {/* Recommended Hospitals */}
+              {FEATURED_HOSPITALS.length > 0 && (
               <section>
                 <h2 className="text-2xl font-bold text-gray-900 mb-5">Recommended Hospitals</h2>
                 <div className="space-y-3">
@@ -122,8 +123,10 @@ export default function TreatmentDetailPage({ params }: Props) {
                   ))}
                 </div>
               </section>
+              )}
 
               {/* Recommended Doctors */}
+              {FEATURED_DOCTORS.length > 0 && (
               <section>
                 <h2 className="text-2xl font-bold text-gray-900 mb-5">Top Specialists</h2>
                 <div className="space-y-3">
@@ -139,8 +142,10 @@ export default function TreatmentDetailPage({ params }: Props) {
                   ))}
                 </div>
               </section>
+              )}
 
               {/* Patient Testimonials */}
+              {TESTIMONIALS.length > 0 && (
               <section>
                 <h2 className="text-2xl font-bold text-gray-900 mb-5">Patient Stories</h2>
                 <div className="space-y-4">
@@ -163,6 +168,7 @@ export default function TreatmentDetailPage({ params }: Props) {
                   ))}
                 </div>
               </section>
+              )}
 
               {/* FAQ */}
               <section>

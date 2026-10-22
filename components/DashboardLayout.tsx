@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import BrandLogo from '@/components/BrandLogo';
 import { usePathname } from 'next/navigation';
-import { SITE_NAME } from '@/lib/constants';
 import { LogoutButton } from '@/components/LogoutButton';
 
 const NAV = [
@@ -23,10 +23,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Logo */}
         <div className="px-5 py-5 border-b border-gray-100">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">T</span>
-            </div>
-            <span className="font-bold text-gray-900 text-sm">{SITE_NAME}</span>
+            <BrandLogo theme="light" />
           </Link>
         </div>
 
@@ -62,10 +59,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Mobile Top Bar */}
       <div className="md:hidden fixed top-0 inset-x-0 z-40 bg-white border-b border-gray-100 px-4 h-14 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-xs">T</span>
-          </div>
-          <span className="font-bold text-gray-900 text-sm">{SITE_NAME}</span>
+          <BrandLogo theme="light" />
         </Link>
         <div className="flex gap-2 overflow-x-auto">
           {NAV.map((item) => (

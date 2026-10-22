@@ -5,7 +5,7 @@ import Footer from '@/components/Footer';
 import ProcedureCards from '@/components/ProcedureCards';
 
 export const metadata: Metadata = {
-  title: 'Popular Procedures & Cost Comparison | Tatavera Health',
+  title: 'Popular Procedures & Cost Comparison | Tatvavera Health',
   description: 'See typical savings on cardiac surgery, orthopedics, IVF, transplants, and more when travelling for treatment.',
 };
 

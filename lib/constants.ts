@@ -1,18 +1,14 @@
-export const SITE_NAME = 'Tatavera Health';
-export const SITE_TAGLINE = 'World-Class Treatment. Trusted Guidance. Every Step.';
+export const SITE_NAME = 'Tatvavera Health';
+export const SITE_TAGLINE = 'Across Country. Alongside You';
 export const SITE_DESCRIPTION =
-  'Tatavera Health connects international patients with top-accredited hospitals and doctors worldwide. Free consultation, dedicated case manager, end-to-end support.';
+  'Tatvavera Health connects international patients with top-accredited hospitals and doctors worldwide. Free consultation, dedicated case manager, end-to-end support.';
 export const SITE_URL = 'https://tataverahealth.com';
 export const WHATSAPP_NUMBER = '+919877263279';
-export const CONTACT_EMAIL = 'care@tataverahealth.com';
+export const CONTACT_EMAIL = 'tataverahealth@gmail.com';
 export const CONTACT_PHONE = '+91 99999 99999';
 
-export const TRUST_STATS = [
-  { label: 'Patients Assisted', value: '100,000+', icon: 'users' },
-  { label: 'Partner Hospitals', value: '500+', icon: 'building-2' },
-  { label: 'Expert Doctors', value: '8,000+', icon: 'stethoscope' },
-  { label: 'Countries Served', value: '125+', icon: 'globe' },
-];
+// Intentionally empty: no verified content yet. Load from the database when available.
+export const TRUST_STATS: Array<{ label: string; value: string; icon: string }> = [];
 
 export const SPECIALTIES = [
   { name: 'Cardiology', slug: 'cardiology', emoji: '❤️', description: 'Heart surgeries, angioplasty, bypass' },
@@ -99,36 +95,17 @@ export const HOW_IT_WORKS_STEPS = [
   },
 ];
 
-export const FEATURED_HOSPITALS = [
-  { name: 'Apollo Hospitals', city: 'Chennai', country: 'India', slug: 'apollo-hospitals-chennai', accreditations: ['JCI', 'NABH'], specialties: ['Cardiology', 'Oncology', 'Orthopedics'], rating: 4.9, reviewCount: 1420 },
-  { name: 'Fortis Healthcare', city: 'Delhi', country: 'India', slug: 'fortis-delhi', accreditations: ['JCI', 'NABH'], specialties: ['Neurology', 'Cardiology', 'Transplants'], rating: 4.8, reviewCount: 980 },
-  { name: 'Memorial Hospital', city: 'Istanbul', country: 'Turkey', slug: 'memorial-istanbul', accreditations: ['JCI'], specialties: ['Oncology', 'Hair Transplant', 'Cosmetics'], rating: 4.8, reviewCount: 720 },
-  { name: 'Bumrungrad International', city: 'Bangkok', country: 'Thailand', slug: 'bumrungrad-bangkok', accreditations: ['JCI'], specialties: ['Cardiology', 'Orthopedics', 'IVF'], rating: 4.9, reviewCount: 1150 },
-  { name: 'Mount Elizabeth', city: 'Singapore', country: 'Singapore', slug: 'mount-elizabeth-singapore', accreditations: ['JCI'], specialties: ['Cancer', 'Neurology', 'Spine'], rating: 4.9, reviewCount: 890 },
-  { name: 'Max Healthcare', city: 'Delhi', country: 'India', slug: 'max-healthcare-delhi', accreditations: ['JCI', 'NABH', 'NABL'], specialties: ['Liver Transplant', 'Bariatrics', 'IVF'], rating: 4.7, reviewCount: 1100 },
-];
+// Intentionally empty: no verified content yet. Load from the database when available.
+export const FEATURED_HOSPITALS: Array<{ name: string; city: string; country: string; slug: string; accreditations: string[]; specialties: string[]; rating: number; reviewCount: number }> = [];
 
-export const FEATURED_DOCTORS = [
-  { name: 'Dr. Devi Prasad Shetty', specialty: 'Cardiac Surgery', hospital: 'Narayana Health, Bangalore', experience: 35, slug: 'dr-devi-prasad-shetty', rating: 4.9, reviewCount: 820 },
-  { name: 'Dr. Arun Saroha', specialty: 'Neurosurgery', hospital: 'Max Healthcare, Delhi', experience: 22, slug: 'dr-arun-saroha', rating: 4.8, reviewCount: 450 },
-  { name: 'Dr. Sunil Shroff', specialty: 'Urology & Transplant', hospital: 'MIOT Hospital, Chennai', experience: 28, slug: 'dr-sunil-shroff', rating: 4.9, reviewCount: 360 },
-  { name: 'Dr. Harshad Joshi', specialty: 'Orthopedic Surgery', hospital: 'Kokilaben Hospital, Mumbai', experience: 20, slug: 'dr-harshad-joshi', rating: 4.7, reviewCount: 290 },
-  { name: 'Dr. Firat Aydin', specialty: 'Oncology', hospital: 'Memorial Hospital, Istanbul', experience: 18, slug: 'dr-firat-aydin', rating: 4.8, reviewCount: 310 },
-  { name: 'Dr. Nantana Thaworn', specialty: 'Cosmetic Surgery', hospital: 'Bumrungrad, Bangkok', experience: 15, slug: 'dr-nantana-thaworn', rating: 4.9, reviewCount: 520 },
-];
+// Intentionally empty: no verified content yet. Load from the database when available.
+export const FEATURED_DOCTORS: Array<{ name: string; specialty: string; hospital: string; experience: number; slug: string; rating: number; reviewCount: number }> = [];
 
-export const TESTIMONIALS = [
-  { name: 'Amara Diallo', country: 'Nigeria', treatment: 'Cardiac Bypass', quote: 'Tatavera guided me from Lagos to India for my heart surgery. The care was incredible and I saved 85% compared to treatment at home.', rating: 5 },
-  { name: 'Mohammed Al-Rashidi', country: 'Kuwait', treatment: 'Knee Replacement', quote: 'My case manager was available 24/7, even on weekends. The hospital in India felt like a five-star hotel. Highly recommend Tatavera.', rating: 5 },
-  { name: 'Fatima Hassan', country: 'Egypt', treatment: 'IVF', quote: 'After years of failed treatments locally, we came to India through Tatavera. I am now 6 months pregnant. Forever grateful.', rating: 5 },
-  { name: 'Sergei Petrov', country: 'Russia', treatment: 'Liver Transplant', quote: 'The doctors at Apollo were world-class. Tatavera translated everything and was with me every step. A true lifesaver.', rating: 5 },
-];
+// Intentionally empty: no verified content yet. Load from the database when available.
+export const TESTIMONIALS: Array<{ name: string; country: string; treatment: string; quote: string; rating: number }> = [];
 
-export const BLOG_POSTS = [
-  { title: 'Why India is the Top Destination for Medical Tourism in 2025', slug: 'india-top-medical-tourism-2025', category: 'Destination Guides', date: '2025-01-15', readTime: 6, excerpt: 'Explore why over 600,000 international patients choose India annually for world-class treatment at a fraction of the cost.' },
-  { title: 'Complete Guide to Medical Visa for India: Step-by-Step', slug: 'india-medical-visa-guide', category: 'Visa & Travel', date: '2025-01-10', readTime: 8, excerpt: 'Everything you need to know about obtaining a Medical Visa for India, including documents, costs, and timelines.' },
-  { title: 'Heart Bypass Surgery Abroad: What to Expect', slug: 'heart-bypass-surgery-abroad', category: 'Treatment Guides', date: '2025-01-05', readTime: 10, excerpt: 'A complete guide for patients considering coronary artery bypass graft surgery outside their home country.' },
-];
+// Intentionally empty: no verified content yet. Load from the database when available.
+export const BLOG_POSTS: Array<{ title: string; slug: string; category: string; date: string; readTime: number; excerpt: string }> = [];
 
 export const PROCEDURES = [
   { id: 'heart-bypass', name: 'Coronary Artery Bypass (CABG)', category: 'Cardiac', description: 'Advanced heart bypass surgery by JCI-certified cardiac surgeons', costFrom: 6000, costTo: 9000, currency: 'USD', timeline: '14-21 days', hospitalStay: '7-10 days', slug: 'coronary-artery-bypass' },

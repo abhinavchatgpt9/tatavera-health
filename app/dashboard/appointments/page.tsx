@@ -10,7 +10,7 @@ import { getPortalSession } from '@/lib/portal-session';
 import { getPatientAppointments } from '@/lib/portal-data';
 import { APPOINTMENT_STATUS_COLORS } from '@/lib/lead-stage';
 
-export const metadata: Metadata = { title: 'Appointments | Tatavera Health' };
+export const metadata: Metadata = { title: 'Appointments | Tatvavera Health' };
 export const dynamic = 'force-dynamic';
 
 export default async function PatientAppointmentsPage() {

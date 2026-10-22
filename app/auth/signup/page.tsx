@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import BrandLogo from '@/components/BrandLogo';
 import { useRouter } from 'next/navigation';
-import { SITE_NAME } from '@/lib/constants';
 
 const COUNTRIES = ['Afghanistan', 'Algeria', 'Angola', 'Bahrain', 'Cameroon', 'Congo', 'Egypt', 'Ethiopia', 'Ghana', 'Iraq', 'Jordan', 'Kenya', 'Kuwait', 'Lebanon', 'Libya', 'Morocco', 'Nigeria', 'Oman', 'Pakistan', 'Qatar', 'Russia', 'Saudi Arabia', 'Senegal', 'South Africa', 'Sudan', 'Syria', 'Tanzania', 'Tunisia', 'UAE', 'Uganda', 'Ukraine', 'Yemen', 'Zambia', 'Zimbabwe', 'Other'];
 
@@ -76,10 +76,7 @@ export default function SignupPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex flex-col">
       <div className="px-6 py-5">
         <Link href="/" className="flex items-center gap-2 w-fit">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold">T</span>
-          </div>
-          <span className="font-bold text-gray-900">{SITE_NAME}</span>
+          <BrandLogo theme="light" />
         </Link>
       </div>
 

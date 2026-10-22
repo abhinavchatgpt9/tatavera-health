@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer';
 
-const SUBJECT_VERIFY = 'Your Tatavera Health verification code';
-const SUBJECT_2FA = 'Your Tatavera Health login code';
+const SUBJECT_VERIFY = 'Your Tatvavera Health verification code';
+const SUBJECT_2FA = 'Your Tatvavera Health login code';
 
 function buildOtpHtml(code: string, title: string) {
   return `
@@ -19,7 +19,7 @@ function buildOtpHtml(code: string, title: string) {
 async function sendViaResend(to: string, subject: string, html: string) {
   const key = process.env.RESEND_API_KEY;
   if (!key) return false;
-  const from = process.env.FROM_EMAIL || 'Tatavera Health <onboarding@resend.dev>';
+  const from = process.env.FROM_EMAIL || 'Tatvavera Health <onboarding@resend.dev>';
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {

@@ -5,7 +5,7 @@ import Footer from '@/components/Footer';
 import { BLOG_POSTS, BLOG_CATEGORIES } from '@/lib/constants';
 
 export const metadata: Metadata = {
-  title: 'Medical Tourism Blog & Resources | Tatavera Health',
+  title: 'Medical Tourism Blog & Resources | Tatvavera Health',
   description: 'Expert guides on treatment abroad, destination tips, visa information, and patient stories to help you make informed decisions.',
 };
 

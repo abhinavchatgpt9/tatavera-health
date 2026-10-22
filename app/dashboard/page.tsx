@@ -7,7 +7,7 @@ import { getPortalSession } from '@/lib/portal-session';
 import { getPatientOverview } from '@/lib/portal-data';
 import { APPOINTMENT_STATUS_COLORS } from '@/lib/lead-stage';
 
-export const metadata: Metadata = { title: 'My Dashboard | Tatavera Health' };
+export const metadata: Metadata = { title: 'My Dashboard | Tatvavera Health' };
 export const dynamic = 'force-dynamic';
 
 const JOURNEY_STAGES = [

@@ -8,8 +8,8 @@ import { TOP_HOSPITALS } from '@/lib/hospitals-data';
 import { DESTINATIONS } from '@/lib/constants';
 
 export const metadata: Metadata = {
-  title: 'Top Accredited Hospitals Worldwide | Tatavera Health',
-  description: 'Browse 500+ JCI and NABH accredited hospitals across India, Turkey, Thailand, Singapore and more. Compare facilities, specialties, and costs.',
+  title: 'Top Accredited Hospitals Worldwide | Tatvavera Health',
+  description: 'Hospitals we coordinate care with. Listings will be published once confirmed.',
 };
 
 export default function HospitalsPage({
@@ -43,21 +43,11 @@ export default function HospitalsPage({
                 World-Class Hospitals
               </h1>
               <p className="text-blue-100 text-lg max-w-xl">
-                Every hospital is JCI or NABH accredited and personally verified by our medical team. Compare facilities, specialties, and costs across 12+ countries.
+                Hospital listings will appear here once partnerships are confirmed.
               </p>
             </div>
           </div>
         </section>
-
-        {/* Stats bar */}
-        <div className="bg-white dark:bg-slate-950 border-b border-slate-100 dark:border-slate-800">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap gap-6 text-sm text-slate-500 dark:text-slate-400">
-            <span className="flex items-center gap-1.5"><span className="text-blue-500">🏥</span> 500+ Partner Hospitals</span>
-            <span className="flex items-center gap-1.5"><span className="text-emerald-500">✅</span> 100% JCI / NABH Accredited</span>
-            <span className="flex items-center gap-1.5"><span className="text-amber-500">⭐</span> Avg 4.8 Patient Rating</span>
-            <span className="flex items-center gap-1.5"><span className="text-violet-500">🌍</span> 12+ Destination Countries</span>
-          </div>
-        </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           {/* Country filter chips */}
@@ -154,7 +144,7 @@ export default function HospitalsPage({
           {filtered.length === 0 && (
             <div className="text-center py-20">
               <div className="text-5xl mb-4">🏥</div>
-              <p className="text-slate-400 text-lg mb-4">No hospitals found for the selected filters.</p>
+              <p className="text-slate-400 text-lg mb-4">{TOP_HOSPITALS.length === 0 ? 'Hospital listings are coming soon.' : 'No hospitals found for the selected filters.'}</p>
               <Link href="/hospitals" className="inline-block px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors">
                 Clear Filters
               </Link>

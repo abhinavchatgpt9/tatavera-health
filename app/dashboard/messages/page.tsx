@@ -10,7 +10,7 @@ import { getPortalSession } from '@/lib/portal-session';
 import { getPatientMessages } from '@/lib/portal-data';
 import { MessagesClient } from './MessagesClient';
 
-export const metadata: Metadata = { title: 'Messages | Tatavera Health' };
+export const metadata: Metadata = { title: 'Messages | Tatvavera Health' };
 export const dynamic = 'force-dynamic';
 
 export default async function PatientMessagesPage() {

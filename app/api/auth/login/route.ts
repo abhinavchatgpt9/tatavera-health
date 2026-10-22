@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { OtpPurpose } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
-import { generateOtp, signPendingToken, verifyPassword } from '@/lib/auth';
+import { generateOtp, signPendingToken, signToken, verifyPassword } from '@/lib/auth';
+import { withSessionCookie } from '@/lib/session-cookie';
 import { sendTwoFactorEmail } from '@/lib/email';
 import { normalizeEmail } from '@/lib/user-email';
 
@@ -53,6 +54,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { success: false, message: 'Invalid email or password.' },
         { status: 401 }
+      );
+    }
+
+    // 2FA is switched off for now. Set LOGIN_REQUIRE_2FA=1 in .env to turn the email code back on.
+    if (process.env.LOGIN_REQUIRE_2FA !== '1') {
+      const token = signToken({ userId: user.id, role: user.role });
+      return withSessionCookie(
+        { success: true, user: { id: user.id, name: user.name, email: user.email, role: user.role } },
+        token
       );
     }
 
