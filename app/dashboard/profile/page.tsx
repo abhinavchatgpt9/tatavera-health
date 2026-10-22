@@ -6,7 +6,7 @@ import { getPortalSession } from '@/lib/portal-session';
 import { prisma } from '@/lib/prisma';
 import { ProfileClient } from './ProfileClient';
 
-export const metadata: Metadata = { title: 'My Profile | Tatavera Health' };
+export const metadata: Metadata = { title: 'My Profile | Tatvavera Health' };
 export const dynamic = 'force-dynamic';
 
 export default async function PatientProfilePage() {

@@ -11,7 +11,7 @@ import {
 } from '@/lib/portal-data';
 import { LEAD_STAGE_LABELS, LEAD_STAGE_COLORS, PRIORITY_COLORS } from '@/lib/lead-stage';
 
-export const metadata: Metadata = { title: 'Case Manager Dashboard | Tatavera Health' };
+export const metadata: Metadata = { title: 'Case Manager Dashboard | Tatvavera Health' };
 export const dynamic = 'force-dynamic';
 
 export default async function CaseManagerDashboard() {

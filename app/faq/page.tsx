@@ -5,7 +5,7 @@ import Footer from '@/components/Footer';
 import FAQ from '@/components/FAQ';
 
 export const metadata: Metadata = {
-  title: 'FAQ | Tatavera Health',
+  title: 'FAQ | Tatvavera Health',
   description: 'Frequently asked questions about medical tourism, costs, visas, hospital quality, and how our free service works.',
 };
 

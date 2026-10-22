@@ -20,7 +20,7 @@ export default function WhyChooseUs() {
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <AnimateIn variant="fade-up" className="text-center mb-14">
           <span className="section-label">Why Us</span>
-          <h2 className="section-title">Why Choose Tatavera Health?</h2>
+          <h2 className="section-title">Why Choose Tatvavera Health?</h2>
           <p className="section-subtitle">
             We are a trusted friend, not a sales agent — guiding you to the right care every step of the way.
           </p>

@@ -22,6 +22,7 @@ function StarRating({ rating, reviewCount }: { rating: number; reviewCount: numb
 const featured = TOP_HOSPITALS.filter((h) => h.featured).slice(0, 6);
 
 export default function FeaturedHospitals() {
+  if (featured.length === 0) return null;
   return (
     <section className="py-20 bg-white dark:bg-slate-950 relative overflow-hidden">
       <div className="absolute bottom-0 right-0 w-[500px] h-[400px] bg-slate-50 dark:bg-slate-900/50 rounded-full blur-3xl translate-x-1/4 translate-y-1/3 pointer-events-none" />
@@ -35,7 +36,7 @@ export default function FeaturedHospitals() {
               <p className="text-slate-500 dark:text-slate-400 mt-1.5">JCI &amp; NABH accredited — personally vetted by our medical team</p>
             </div>
             <Link href="/hospitals" className="hidden md:inline-flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-semibold hover:underline text-sm">
-              View All 500+ Hospitals →
+              View All Hospitals →
             </Link>
           </div>
         </AnimateIn>

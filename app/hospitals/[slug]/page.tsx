@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const hospital = FEATURED_HOSPITALS.find((h) => h.slug === params.slug);
   if (!hospital) return {};
   return {
-    title: `${hospital.name}, ${hospital.city} | Tatavera Health`,
+    title: `${hospital.name}, ${hospital.city} | Tatvavera Health`,
     description: `${hospital.name} in ${hospital.city}, ${hospital.country}. ${hospital.accreditations.join(', ')} accredited. Top specialties: ${hospital.specialties.join(', ')}.`,
   };
 }
@@ -101,6 +101,7 @@ export default function HospitalProfilePage({ params }: Props) {
               </section>
 
               {/* Doctors */}
+              {FEATURED_DOCTORS.length > 0 && (
               <section>
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">Doctors at This Hospital</h2>
                 <div className="space-y-3">
@@ -116,6 +117,7 @@ export default function HospitalProfilePage({ params }: Props) {
                   ))}
                 </div>
               </section>
+              )}
 
               {/* Cost Table */}
               <section>
@@ -144,6 +146,7 @@ export default function HospitalProfilePage({ params }: Props) {
               </section>
 
               {/* Reviews */}
+              {TESTIMONIALS.length > 0 && (
               <section>
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">Patient Reviews</h2>
                 <div className="space-y-4">
@@ -158,6 +161,7 @@ export default function HospitalProfilePage({ params }: Props) {
                   ))}
                 </div>
               </section>
+              )}
             </div>
 
             {/* Sidebar */}

@@ -12,8 +12,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const doctor = FEATURED_DOCTORS.find((d) => d.slug === params.slug);
   if (!doctor) return {};
   return {
-    title: `${doctor.name} — ${doctor.specialty} | Tatavera Health`,
-    description: `${doctor.name}, ${doctor.specialty} specialist with ${doctor.experience} years of experience at ${doctor.hospital}. Book a consultation through Tatavera Health.`,
+    title: `${doctor.name} — ${doctor.specialty} | Tatvavera Health`,
+    description: `${doctor.name}, ${doctor.specialty} specialist with ${doctor.experience} years of experience at ${doctor.hospital}. Book a consultation through Tatvavera Health.`,
   };
 }
 
@@ -92,6 +92,7 @@ export default function DoctorProfilePage({ params }: Props) {
               </section>
 
               {/* Testimonials */}
+              {TESTIMONIALS.length > 0 && (
               <section>
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">Patient Testimonials</h2>
                 <div className="space-y-4">
@@ -106,6 +107,7 @@ export default function DoctorProfilePage({ params }: Props) {
                   ))}
                 </div>
               </section>
+              )}
             </div>
 
             {/* Sidebar */}

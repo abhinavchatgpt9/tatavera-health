@@ -12,7 +12,7 @@ import {
 } from '@/lib/portal-data';
 import { CASE_STATUS_LABELS, CASE_STATUS_COLORS, APPOINTMENT_STATUS_COLORS } from '@/lib/lead-stage';
 
-export const metadata: Metadata = { title: 'Doctor Dashboard | Tatavera Health' };
+export const metadata: Metadata = { title: 'Doctor Dashboard | Tatvavera Health' };
 export const dynamic = 'force-dynamic';
 
 function isToday(iso: string): boolean {

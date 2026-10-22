@@ -4,7 +4,7 @@ import Footer from '@/components/Footer';
 import LeadForm from '@/components/LeadForm';
 
 export const metadata: Metadata = {
-  title: 'Free Medical Consultation | Tatavera Health',
+  title: 'Free Medical Consultation | Tatvavera Health',
   description: 'Submit your case for a free, no-obligation review. Our medical team responds within 24 hours.',
 };
 

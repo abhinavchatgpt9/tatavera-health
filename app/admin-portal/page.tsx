@@ -7,7 +7,7 @@ import { getPortalSession } from '@/lib/portal-session';
 import { getAdminStats, getAdminLeads, getAdminAuditLogs } from '@/lib/portal-data';
 import { LEAD_STAGE_LABELS, LEAD_STAGE_COLORS } from '@/lib/lead-stage';
 
-export const metadata: Metadata = { title: 'Admin Dashboard | Tatavera Health' };
+export const metadata: Metadata = { title: 'Admin Dashboard | Tatvavera Health' };
 export const dynamic = 'force-dynamic';
 
 export default async function AdminDashboard() {
@@ -22,7 +22,7 @@ export default async function AdminDashboard() {
   return (
     <AdminLayout>
       <PortalPage>
-        <PageHeader title="Platform Overview" description="Everything happening across Tatavera Health." />
+        <PageHeader title="Platform Overview" description="Everything happening across Tatvavera Health." />
 
         <StatGrid
           stats={[

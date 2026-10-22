@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import BrandLogo from '@/components/BrandLogo';
 import { useRouter } from 'next/navigation';
-import { SITE_NAME } from '@/lib/constants';
 import { portalPathForRole } from '@/lib/portal-routes';
 
 const LOGIN_2FA_STORAGE = 'tatavera_login_2fa';
@@ -145,10 +145,7 @@ export default function LoginPage() {
       {/* Simple top bar */}
       <div className="px-6 py-5">
         <Link href="/" className="flex items-center gap-2 w-fit">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold">T</span>
-          </div>
-          <span className="font-bold text-gray-900">{SITE_NAME}</span>
+          <BrandLogo theme="light" />
         </Link>
       </div>
 
@@ -157,31 +154,7 @@ export default function LoginPage() {
           <h1 className="text-2xl font-bold text-gray-900 mb-1">Welcome back</h1>
           <p className="text-gray-500 text-sm mb-6">Log in to track your case and access your reports.</p>
 
-          {/* Tabs */}
-          <div className="flex border border-gray-200 rounded-xl p-1 mb-6">
-            <button
-              type="button"
-              onClick={() => {
-                setTab('password');
-                setOtp('');
-                setError('');
-              }}
-              className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${tab === 'password' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:text-gray-900'}`}
-            >
-              Email & Password
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setTab('otp');
-                setOtp('');
-                setError('');
-              }}
-              className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${tab === 'otp' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:text-gray-900'}`}
-            >
-              Phone OTP
-            </button>
-          </div>
+          {/* Phone OTP login is switched off for now; only email + password is offered. */}
 
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">

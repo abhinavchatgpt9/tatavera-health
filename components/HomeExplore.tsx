@@ -39,7 +39,7 @@ const LINKS = [
   },
   {
     href: '/why-choose-us',
-    title: 'Why Tatavera',
+    title: 'Why Tatvavera',
     desc: 'Accreditation, transparency, and free patient support.',
     emoji: '✨',
   },

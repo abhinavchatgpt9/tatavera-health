@@ -12,6 +12,7 @@ const ICONS: Record<string, LucideIcon> = {
 };
 
 export default function TrustStats() {
+  if (TRUST_STATS.length === 0) return null;
   return (
     <section className="relative overflow-hidden bg-slate-50 py-14 dark:bg-slate-900/50">
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

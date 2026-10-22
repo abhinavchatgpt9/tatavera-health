@@ -19,6 +19,8 @@ export default function FeaturedDoctors() {
     setModalOpen(true);
   };
 
+  if (featured.length === 0) return null;
+
   return (
     <>
       <section className="py-20 bg-slate-50 dark:bg-slate-900 relative overflow-hidden">
@@ -33,7 +35,7 @@ export default function FeaturedDoctors() {
                 <p className="text-slate-500 dark:text-slate-400 mt-1.5">Internationally trained, personally matched to your condition</p>
               </div>
               <Link href="/doctors" className="hidden md:inline-flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-semibold hover:underline text-sm">
-                View All 8,000+ Doctors →
+                View All Doctors →
               </Link>
             </div>
           </AnimateIn>

@@ -4,8 +4,8 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
 export const metadata: Metadata = {
-  title: 'Our Services — All Free for Patients | Tatavera Health',
-  description: 'From case evaluation to post-treatment follow-up — all services at Tatavera Health are completely free for international patients.',
+  title: 'Our Services — All Free for Patients | Tatvavera Health',
+  description: 'From case evaluation to post-treatment follow-up — all services at Tatvavera Health are completely free for international patients.',
 };
 
 const SERVICES = [

@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import BrandLogo from '@/components/BrandLogo';
 import { useRouter } from 'next/navigation';
-import { SITE_NAME } from '@/lib/constants';
 import { portalPathForRole } from '@/lib/portal-routes';
 
 const STORAGE_KEY = 'tatavera_login_2fa';
@@ -94,10 +94,7 @@ export default function LoginOtpPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex flex-col">
       <div className="px-6 py-5">
         <Link href="/" className="flex items-center gap-2 w-fit">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold">T</span>
-          </div>
-          <span className="font-bold text-gray-900">{SITE_NAME}</span>
+          <BrandLogo theme="light" />
         </Link>
       </div>
 

@@ -1,5 +1,5 @@
 /**
- * Database seed — Tatavera Health
+ * Database seed — Tatvavera Health
  *
  * Populates a fresh Postgres with the same content the public site already
  * ships in lib/*, plus demo accounts for every role and a sample CRM pipeline
@@ -102,7 +102,7 @@ async function seedTreatments() {
         duration: procedure.timeline,
         hospitalStay: procedure.hospitalStay,
         recoveryTime: procedure.timeline,
-        metaTitle: `${procedure.name} Abroad — Cost, Hospitals & Recovery | Tatavera Health`,
+        metaTitle: `${procedure.name} Abroad — Cost, Hospitals & Recovery | Tatvavera Health`,
         metaDescription: `${procedure.description}. Costs from $${procedure.costFrom.toLocaleString()}. Free consultation with a dedicated case manager.`,
         published: true,
       },
@@ -147,10 +147,10 @@ async function seedDestinations() {
           'Internationally accredited facilities, surgeons trained in the UK and USA, English-speaking clinical staff, and total costs that are a fraction of what the same care costs at home — including flights and accommodation.',
         ].join('\n'),
         topSpecialties: [destination.topTreatment],
-        visaInfo: `Most nationalities can obtain a medical visa for ${destination.country}. Tatavera Health provides the hospital invitation letter and guides you through the embassy process end to end.`,
+        visaInfo: `Most nationalities can obtain a medical visa for ${destination.country}. Tatvavera Health provides the hospital invitation letter and guides you through the embassy process end to end.`,
         travelTips: `Fly into the city nearest your chosen hospital. Your case manager arranges airport pickup, a local SIM, and accommodation for your companion before you land.`,
         accommodation: `Options range from hospital guest houses to serviced apartments within walking distance of the hospital. We book on your behalf at partner rates.`,
-        metaTitle: `Medical Tourism in ${destination.country} — Hospitals, Costs & Visa | Tatavera Health`,
+        metaTitle: `Medical Tourism in ${destination.country} — Hospitals, Costs & Visa | Tatvavera Health`,
         metaDescription: `${destination.highlight}. Compare accredited hospitals in ${destination.country} and get a free cost estimate.`,
         featured: ['india', 'turkey', 'thailand'].includes(destination.slug),
         published: true,
@@ -192,7 +192,7 @@ async function seedHospitals() {
         reviewCount: source.reviewCount ?? 0,
         featured: Boolean(source.featured),
         published: true,
-        metaTitle: `${source.name}, ${source.city} — Treatments, Costs & Doctors | Tatavera Health`,
+        metaTitle: `${source.name}, ${source.city} — Treatments, Costs & Doctors | Tatvavera Health`,
         metaDescription: source.tagline ?? source.about.slice(0, 155),
       },
     });
@@ -284,7 +284,7 @@ async function seedDoctors() {
         reviewCount: source.reviewCount ?? 0,
         featured: true,
         published: true,
-        metaTitle: `${source.name} — ${source.specialty} | Tatavera Health`,
+        metaTitle: `${source.name} — ${source.specialty} | Tatvavera Health`,
         metaDescription: `${source.designation}. ${source.experience} years' experience, ${source.totalSurgeries} procedures. Book a free second opinion.`,
       },
     });
@@ -373,11 +373,11 @@ async function seedBlog() {
           '',
           '### Talk to someone before you book anything',
           '',
-          'Tatavera Health consultations are free for patients. A case manager reviews your reports, matches you to accredited hospitals, and gives you written cost estimates before you commit to anything.',
+          'Tatvavera Health consultations are free for patients. A case manager reviews your reports, matches you to accredited hospitals, and gives you written cost estimates before you commit to anything.',
         ].join('\n'),
         category: post.category,
         tags: [post.category],
-        authorName: 'Tatavera Health Editorial',
+        authorName: 'Tatvavera Health Editorial',
         readTime: post.readTime,
         metaTitle: post.title,
         metaDescription: post.excerpt,
@@ -631,7 +631,7 @@ async function seedLeads(caseManagerProfileId: string, assigneeId: string) {
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
 
 async function main() {
-  console.log('Seeding Tatavera Health…');
+  console.log('Seeding Tatvavera Health…');
 
   await seedTreatments();
   await seedDestinations();

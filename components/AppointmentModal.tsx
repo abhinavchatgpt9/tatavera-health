@@ -423,8 +423,6 @@ export default function AppointmentModal({ open, onClose, preselectedDoctor, pre
             <span>🔒 SSL Encrypted</span>
             <span>·</span>
             <span>🆓 Always Free</span>
-            <span>·</span>
-            <span>🌍 125+ Countries</span>
           </div>
         )}
       </div>

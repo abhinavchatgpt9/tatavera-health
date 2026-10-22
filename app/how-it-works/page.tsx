@@ -5,8 +5,8 @@ import Footer from '@/components/Footer';
 import HowItWorks from '@/components/HowItWorks';
 
 export const metadata: Metadata = {
-  title: 'How It Works | Tatavera Health',
-  description: 'From sharing your reports to recovery — see how Tatavera guides you in four simple steps.',
+  title: 'How It Works | Tatvavera Health',
+  description: 'From sharing your reports to recovery — see how Tatvavera guides you in four simple steps.',
 };
 
 export default function HowItWorksPage() {

@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const dest = DESTINATIONS.find((d) => d.slug === params.slug);
   if (!dest) return {};
   return {
-    title: `Medical Treatment in ${dest.country} | Hospitals & Cost | Tatavera Health`,
+    title: `Medical Treatment in ${dest.country} | Hospitals & Cost | Tatvavera Health`,
     description: `Why choose ${dest.country} for medical treatment? Top hospitals, cost advantages, visa info, and patient stories. ${dest.highlight}.`,
   };
 }
@@ -99,6 +99,7 @@ export default function DestinationDetailPage({ params }: Props) {
               </section>
 
               {/* Top Hospitals */}
+              {FEATURED_HOSPITALS.length > 0 && (
               <section>
                 <h2 className="text-2xl font-bold text-gray-900 mb-5">Top Hospitals in {dest.country}</h2>
                 <div className="space-y-3">
@@ -113,6 +114,7 @@ export default function DestinationDetailPage({ params }: Props) {
                   ))}
                 </div>
               </section>
+              )}
 
               {/* Visa & Travel */}
               <section>
@@ -143,6 +145,7 @@ export default function DestinationDetailPage({ params }: Props) {
               </section>
 
               {/* Patient Stories */}
+              {TESTIMONIALS.length > 0 && (
               <section>
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">Patient Stories from {dest.country}</h2>
                 <div className="space-y-4">
@@ -154,6 +157,7 @@ export default function DestinationDetailPage({ params }: Props) {
                   ))}
                 </div>
               </section>
+              )}
             </div>
 
             {/* Sidebar */}

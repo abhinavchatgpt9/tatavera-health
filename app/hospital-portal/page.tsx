@@ -12,7 +12,7 @@ import {
 } from '@/lib/portal-data';
 import { LEAD_STAGE_LABELS, LEAD_STAGE_COLORS, QUOTATION_STATUS_COLORS } from '@/lib/lead-stage';
 
-export const metadata: Metadata = { title: 'Hospital Dashboard | Tatavera Health' };
+export const metadata: Metadata = { title: 'Hospital Dashboard | Tatvavera Health' };
 export const dynamic = 'force-dynamic';
 
 export default async function HospitalDashboard() {

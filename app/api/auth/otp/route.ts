@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     if (!user) {
       // Auto-create account for new phone users
       user = await prisma.user.create({
-        data: { name: 'Patient', email: `${phone.replace(/\D/g, '')}@tataverahealth.com`, phone },
+        data: { name: 'Patient', email: `${phone.replace(/\D/g, '')}@tatvaverahealth.com`, phone },
       });
       await prisma.patientCase.create({ data: { userId: user.id } });
     }
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
       data: { userId: user.id, token: otp, purpose: OtpPurpose.PHONE_LOGIN, expiresAt },
     });
 
-    const smsBody = `Your Tatavera Health login code is ${otp}. It expires in 10 minutes.`;
+    const smsBody = `Your Tatvavera Health login code is ${otp}. It expires in 10 minutes.`;
     try {
       const sent = await sendSmsOtp(phone, smsBody);
       if (!sent && process.env.NODE_ENV === 'development') {

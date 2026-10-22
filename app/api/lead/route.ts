@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
+import { isValidE164 } from '@/lib/phone';
 import { getAuthUser } from '@/lib/auth';
 
 const LeadSchema = z.object({
-  name: z.string().min(2).max(100),
-  email: z.string().email(),
-  phone: z.string().min(7).max(20),
-  country: z.string().min(2).max(100),
-  procedure: z.string().min(1).max(200),
-  message: z.string().optional(),
+  name: z.string().trim().min(2, 'Please enter your full name').max(100),
+  email: z.string().trim().toLowerCase().email('Please enter a valid email').max(254),
+  phone: z.string().trim().refine(isValidE164, 'Please enter a valid phone number'),
+  country: z.string().trim().min(2, 'Country is required').max(100),
+  procedure: z.string().trim().min(1, 'Please select a procedure').max(200),
+  message: z.string().trim().max(2000, 'Message is too long').optional(),
   agreeTerms: z.boolean(),
 });
 
@@ -62,8 +63,29 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   } catch (error) {
     console.error('Lead error:', error);
+    // Prisma reports connection problems as PrismaClientInitializationError (`errorCode`)
+    // and query problems as PrismaClientKnownRequestError (`code`).
+    const err = error as { code?: string; errorCode?: string; message?: string } | null;
+    const prismaCode = err?.errorCode ?? err?.code;
+    const dbDown =
+      (prismaCode && ['P1000', 'P1001', 'P1002', 'P1003', 'P1017', 'P2021', 'P2022'].includes(prismaCode)) ||
+      /Can't reach database|Authentication failed|does not exist|PrismaClientInitializationError/i.test(err?.message ?? '');
+    if (dbDown) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Our system is temporarily unavailable. Please try again shortly or contact us on WhatsApp.',
+          ...(process.env.NODE_ENV !== 'production' && { debug: `${prismaCode ?? 'DB'}: ${(err?.message ?? '').slice(-400)}` }),
+        },
+        { status: 503 }
+      );
+    }
     return NextResponse.json(
-      { success: false, message: 'An error occurred. Please try again.' },
+      {
+        success: false,
+        message: 'An error occurred. Please try again.',
+        ...(process.env.NODE_ENV !== 'production' && { debug: String((error as Error)?.message ?? error).slice(-400) }),
+      },
       { status: 500 }
     );
   }

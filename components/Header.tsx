@@ -2,7 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { LANGUAGES, SITE_NAME } from '@/lib/constants';
+import BrandLogo from '@/components/BrandLogo';
+import { LANGUAGES } from '@/lib/constants';
 import DarkModeToggle from '@/components/DarkModeToggle';
 
 const NAV_LINKS = [
@@ -49,10 +50,7 @@ export default function Header() {
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16 md:h-20">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 group">
-          <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center shadow-md group-hover:shadow-blue-500/40 group-hover:scale-105 transition-all duration-200">
-            <span className="text-white font-bold text-base">T</span>
-          </div>
-          <span className="font-bold text-lg text-slate-900 dark:text-white hidden sm:inline">{SITE_NAME}</span>
+          <BrandLogo theme="auto" />
         </Link>
 
         {/* Desktop Navigation — each item is its own route */}
@@ -99,7 +97,7 @@ export default function Header() {
           </div>
 
           {/* Dark mode toggle */}
-          <DarkModeToggle />
+          <div className="hidden sm:block"><DarkModeToggle /></div>
 
           {/* Login */}
           <Link
@@ -155,7 +153,8 @@ export default function Header() {
               </Link>
             ))}
             <div className="border-t border-slate-100 dark:border-slate-800 pt-3 mt-2 flex flex-col gap-2">
-              <div className="flex gap-2 flex-wrap">
+              <div className="flex gap-2 flex-wrap items-center">
+                <div className="sm:hidden"><DarkModeToggle /></div>
                 {LANGUAGES.map((lang) => (
                   <button
                     key={lang.code}

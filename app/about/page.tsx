@@ -4,8 +4,8 @@ import Footer from '@/components/Footer';
 import { TRUST_STATS } from '@/lib/constants';
 
 export const metadata: Metadata = {
-  title: 'About Us | Tatavera Health',
-  description: 'Tatavera Health is a trusted medical tourism facilitator connecting international patients with top-accredited hospitals and doctors worldwide.',
+  title: 'About Us | Tatvavera Health',
+  description: 'Tatvavera Health is a trusted medical tourism facilitator connecting international patients with top-accredited hospitals and doctors worldwide.',
 };
 
 export default function AboutPage() {
@@ -24,11 +24,12 @@ export default function AboutPage() {
         <section className="bg-gradient-to-br from-blue-50 to-white py-16 border-b border-gray-100">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-5">We Guide Patients to the Right Care</h1>
-            <p className="text-xl text-gray-600 leading-relaxed">Tatavera Health is a trusted medical tourism facilitator dedicated to connecting international patients — primarily from Africa, the Middle East, and CIS countries — with top-accredited hospitals and expert doctors worldwide.</p>
+            <p className="text-xl text-gray-600 leading-relaxed">Tatvavera Health is a trusted medical tourism facilitator dedicated to connecting international patients — primarily from Africa, the Middle East, and CIS countries — with top-accredited hospitals and expert doctors worldwide.</p>
           </div>
         </section>
 
         {/* Trust Stats */}
+        {TRUST_STATS.length > 0 && (
         <div className="bg-blue-600 py-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-2 lg:grid-cols-4 gap-6 lg:divide-x lg:divide-blue-500">
             {TRUST_STATS.map((stat) => (
@@ -39,6 +40,7 @@ export default function AboutPage() {
             ))}
           </div>
         </div>
+        )}
 
         {/* Mission */}
         <section className="py-16">

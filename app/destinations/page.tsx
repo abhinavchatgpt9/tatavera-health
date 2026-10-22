@@ -6,7 +6,7 @@ import LeadForm from '@/components/LeadForm';
 import { DESTINATIONS } from '@/lib/constants';
 
 export const metadata: Metadata = {
-  title: 'Top Medical Tourism Destinations | Tatavera Health',
+  title: 'Top Medical Tourism Destinations | Tatvavera Health',
   description: 'Explore the world\'s best medical tourism destinations — India, Turkey, Thailand, Singapore, Germany, UAE and more.',
 };
 
@@ -60,7 +60,6 @@ export default function DestinationsPage() {
         <div className="bg-white dark:bg-slate-950 border-b border-slate-100 dark:border-slate-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap gap-6 text-sm text-slate-500 dark:text-slate-400">
             <span className="flex items-center gap-1.5"><span className="text-emerald-500">🌍</span> 8 Premium Destinations</span>
-            <span className="flex items-center gap-1.5"><span className="text-blue-500">🏥</span> 500+ Partner Hospitals</span>
             <span className="flex items-center gap-1.5"><span className="text-amber-500">💰</span> Save Up to 90% vs US Costs</span>
             <span className="flex items-center gap-1.5"><span className="text-violet-500">✈️</span> Full Travel Support Included</span>
           </div>

@@ -4,7 +4,7 @@ import Footer from '@/components/Footer';
 import DoctorsClient from '@/components/DoctorsClient';
 
 export const metadata: Metadata = {
-  title: 'Expert Doctors Worldwide | Tatavera Health',
+  title: 'Expert Doctors Worldwide | Tatvavera Health',
   description: 'Find internationally trained specialist doctors in cardiology, oncology, orthopedics, neurology, IVF and more at top accredited hospitals.',
 };
 
@@ -32,21 +32,11 @@ export default function DoctorsPage({
                 Top-Rated Specialists
               </h1>
               <p className="text-blue-100 text-lg max-w-xl">
-                Internationally trained doctors with decades of experience. Matched personally to your condition and budget — at zero cost to you.
+                Specialists matched personally to your condition.
               </p>
             </div>
           </div>
         </section>
-
-        {/* Stats bar */}
-        <div className="bg-white dark:bg-slate-950 border-b border-slate-100 dark:border-slate-800">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap gap-6 text-sm text-slate-500 dark:text-slate-400">
-            <span className="flex items-center gap-1.5"><span className="text-violet-500">👨‍⚕️</span> 8,000+ Specialist Doctors</span>
-            <span className="flex items-center gap-1.5"><span className="text-emerald-500">✅</span> All Internationally Trained</span>
-            <span className="flex items-center gap-1.5"><span className="text-amber-500">⭐</span> Avg 4.8 Patient Rating</span>
-            <span className="flex items-center gap-1.5"><span className="text-blue-500">💬</span> Free Video Consultation</span>
-          </div>
-        </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <DoctorsClient specialtyFilter={specialtyFilter} />
