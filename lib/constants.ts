@@ -2,7 +2,7 @@ export const SITE_NAME = 'Tatvavera Health';
 export const SITE_TAGLINE = 'Across Country. Alongside You';
 export const SITE_DESCRIPTION =
   'Tatvavera Health connects international patients with top-accredited hospitals and doctors worldwide. Free consultation, dedicated case manager, end-to-end support.';
-export const SITE_URL = 'https://tataverahealth.com';
+export const SITE_URL = 'https://tatvaverahealth.com';
 export const WHATSAPP_NUMBER = '+919877263279';
 export const CONTACT_EMAIL = 'tataverahealth@gmail.com';
 export const CONTACT_PHONE = '+91 99999 99999';
