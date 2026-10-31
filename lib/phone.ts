@@ -5,10 +5,12 @@ import {
   parsePhoneNumberFromString,
   type CountryCode,
 } from 'libphonenumber-js/max';
+import { Metadata } from 'libphonenumber-js/core';
+import maxMetadata from 'libphonenumber-js/metadata.max.json';
 import examples from 'libphonenumber-js/examples.mobile.json';
 
-/** Shown first in the country pickers (Kenya–India corridor, then nearby markets). */
-const PINNED: CountryCode[] = ['KE', 'IN', 'NG', 'TZ', 'UG', 'ET', 'GH', 'ZA', 'AE', 'SA', 'KW', 'EG', 'GB', 'US'];
+/** Shown first in the country pickers (India first, then key patient markets). */
+const PINNED: CountryCode[] = ['IN', 'KE', 'NG', 'TZ', 'UG', 'ET', 'GH', 'ZA', 'AE', 'SA', 'KW', 'EG', 'GB', 'US'];
 
 let regionNames: Intl.DisplayNames | null = null;
 
@@ -51,6 +53,60 @@ export function examplePhone(iso: CountryCode): string {
   } catch {
     return '';
   }
+}
+
+const digitLimitCache = new Map<CountryCode, { max: number; prefix: string }>();
+
+/** Longest valid mobile number (national digits) for a country, plus its trunk prefix (e.g. "0"). */
+function digitLimit(iso: CountryCode): { max: number; prefix: string } {
+  const cached = digitLimitCache.get(iso);
+  if (cached) return cached;
+  let result = { max: 15, prefix: '' };
+  try {
+    const meta = new Metadata(maxMetadata);
+    meta.selectNumberingPlan(iso);
+    // These methods exist at runtime but are missing from the library's type definitions.
+    const plan = meta.numberingPlan as unknown as
+      | {
+          type(t: 'MOBILE' | 'FIXED_LINE'): { possibleLengths(): number[] } | undefined;
+          possibleLengths(): number[];
+          nationalPrefix(): string | undefined;
+        }
+      | undefined;
+    const lengths =
+      plan?.type('MOBILE')?.possibleLengths() ??
+      plan?.type('FIXED_LINE')?.possibleLengths() ??
+      plan?.possibleLengths();
+    if (plan && lengths?.length) {
+      result = { max: Math.max(...lengths), prefix: plan.nationalPrefix() ?? '' };
+    }
+  } catch {
+    // Unknown country: keep the E.164 ceiling of 15 digits.
+  }
+  digitLimitCache.set(iso, result);
+  return result;
+}
+
+/** Max digits a user may type for this country (allows a leading trunk prefix like "0" when typed). */
+export function maxPhoneDigits(iso: CountryCode, value = ''): number {
+  const { max, prefix } = digitLimit(iso);
+  const digits = value.replace(/\D/g, '');
+  return prefix && digits.startsWith(prefix) ? max + prefix.length : max;
+}
+
+/** Drop any digits beyond the country's limit, keeping the user's spacing/punctuation. */
+export function limitPhoneDigits(value: string, iso: CountryCode): string {
+  const max = maxPhoneDigits(iso, value);
+  let count = 0;
+  let out = '';
+  for (const ch of value) {
+    if (/\d/.test(ch)) {
+      if (count >= max) break;
+      count += 1;
+    }
+    out += ch;
+  }
+  return out;
 }
 
 export type PhoneResult = { ok: true; e164: string } | { ok: false; message: string };

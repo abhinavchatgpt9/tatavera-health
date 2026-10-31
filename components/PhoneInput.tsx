@@ -1,7 +1,7 @@
 'use client';
 
 import type { CountryCode } from 'libphonenumber-js/max';
-import { COUNTRY_OPTIONS, examplePhone } from '@/lib/phone';
+import { COUNTRY_OPTIONS, examplePhone, limitPhoneDigits } from '@/lib/phone';
 
 interface PhoneInputProps {
   id: string;
@@ -27,7 +27,10 @@ export default function PhoneInput({ id, iso, value, onChange, onBlur, error, di
             aria-label="Country calling code"
             value={iso}
             disabled={disabled}
-            onChange={(e) => onChange(e.target.value as CountryCode, value)}
+            onChange={(e) => {
+              const next = e.target.value as CountryCode;
+              onChange(next, limitPhoneDigits(value, next));
+            }}
             className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
           >
             {COUNTRY_OPTIONS.map((c) => (
@@ -49,7 +52,7 @@ export default function PhoneInput({ id, iso, value, onChange, onBlur, error, di
           placeholder={examplePhone(iso) || 'Phone number'}
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? errId : undefined}
-          onChange={(e) => onChange(iso, e.target.value.replace(/[^\d\s\-().]/g, ''))}
+          onChange={(e) => onChange(iso, limitPhoneDigits(e.target.value.replace(/[^\d\s\-().]/g, ''), iso))}
           onBlur={onBlur}
           className={`input-field min-w-0 flex-1 ${error ? 'border-red-400' : ''}`}
         />

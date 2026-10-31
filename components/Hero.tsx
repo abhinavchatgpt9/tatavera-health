@@ -78,7 +78,7 @@ export default function Hero() {
           </motion.h1>
 
           <motion.p variants={item} className="mx-auto mb-9 max-w-2xl text-lg text-slate-300 md:text-xl">
-            We coordinate your treatment journey between <strong className="text-white">Kenya and India</strong>, starting with orthopaedic and spine care.
+            We help patients from <strong className="text-white">around the world</strong> get trusted treatment in India, starting with orthopaedic and spine care.
             <span className="text-slate-400"> Share your case and our team will guide you through the next steps.</span>
           </motion.p>
 
