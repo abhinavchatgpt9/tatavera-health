@@ -269,7 +269,7 @@ export function QuotationsClient({ quotations, leads }: { quotations: Quotation[
             >
               <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <h3 className="font-semibold text-slate-900 dark:text-white">{q.patient}</h3>
+                  <h3 className="text-base font-semibold text-slate-900 dark:text-white">{q.patient}</h3>
                   <p className="text-xs text-slate-400 dark:text-slate-500">
                     {q.country} · {q.treatment} · issued {formatDate(q.createdAt)}
                   </p>

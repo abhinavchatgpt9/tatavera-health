@@ -51,7 +51,7 @@ export default function WhyChooseUs() {
         <AnimateIn variant="fade-up" delay={200} className="mt-10 text-center">
           <div className="inline-flex items-center gap-2 text-base font-semibold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 px-6 py-3 rounded-full">
             <span>🎁</span>
-            <span>All our services are 100% FREE for patients</span>
+            <span>Our enquiry review and coordination are free. You pay for treatment and travel.</span>
           </div>
         </AnimateIn>
       </div>

@@ -5,7 +5,7 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
-const SYSTEM_PROMPT = `You are Aria, a warm medical tourism assistant for Tatvavera Health. Help international patients with treatments, hospitals, costs, visa, and travel in India. Be concise (3-5 sentences). Services are 100% free for patients. Partner hospitals: Apollo Chennai, Medanta Gurugram, Fortis FMRI, Kokilaben Mumbai, BLK-Max Delhi, Aster Kochi, Manipal Bangalore, Artemis Gurugram. Costs (USD): Heart bypass $6-9k, Knee replacement $3.5-5.5k, Liver transplant $28-45k, BMT $18-35k, IVF $2.5-4k, Spine $5.5-10k. e-Medical Visa takes 3-5 days, we provide invitation letters. Always end with an offer to connect with the team.`;
+const SYSTEM_PROMPT = `You are Aria, a warm medical tourism assistant for Tatvavera Health. Help international patients with treatments, hospitals, costs, visa, and travel in India. Be concise (3-5 sentences). Our enquiry review and coordination are free for patients; patients pay for treatment, travel and follow-up. Never promise exact prices, outcomes or response times beyond 'we call back within 24 hours'. Partner hospitals: Apollo Chennai, Medanta Gurugram, Fortis FMRI, Kokilaben Mumbai, BLK-Max Delhi, Aster Kochi, Manipal Bangalore, Artemis Gurugram. Costs (USD): Heart bypass $6-9k, Knee replacement $3.5-5.5k, Liver transplant $28-45k, BMT $18-35k, IVF $2.5-4k, Spine $5.5-10k. e-Medical Visa takes 3-5 days, we provide invitation letters. Always end with an offer to connect with the team.`;
 
 // ─── Built-in response engine (works with zero API key) ──────────────────────
 
@@ -54,7 +54,7 @@ const KB: KBEntry[] = [
   },
   {
     keywords: ['free', 'your service', 'service free', 'how do you', 'how does it work', 'how it works', 'what do you do', 'your company'],
-    reply: `Yes — **Tatvavera Health is completely free for patients!** 🎁\n\nHere's how it works:\n\n1. **Submit your case** — Share your medical reports and we review within 24 hours\n2. **Get matched** — We find the best hospital and doctor for your condition and budget\n3. **Plan your trip** — We arrange medical visa, flights, airport transfer, accommodation\n4. **Receive treatment** — Your dedicated case manager is with you every step\n5. **Recovery support** — 6 months of telemedicine follow-up included\n\n**How we're compensated:** Partner hospitals pay us a referral fee. You pay the hospital directly at the same rate as any local patient — no markup, ever.\n\nOur team speaks **English, Arabic, French, and Russian** and operates 7 days a week.\n\nReady to start? Click **Book Free Consultation** or WhatsApp us! 💬`,
+    reply: `Our **enquiry review and coordination are free**. You pay the hospital for treatment, and you pay for travel, accommodation and follow-up.\n\nHere's how it works:\n\n1. **Request a callback** — Tell us what you need and we call you back within 24 hours\n2. **Get matched** — We suggest hospitals and doctors for your condition and budget\n3. **Hospital estimate** — A separate step: the hospital reviews your case and sends an estimate\n4. **Plan your trip** — We help coordinate your visa invitation, flights, transfers and accommodation\n5. **Treatment & follow-up** — Your case manager supports you; follow-up depends on your treatment\n\n**How we're compensated:** Partner hospitals pay us a referral fee. You pay the hospital directly at the same rate as any local patient — no markup, ever.\n\nOur team speaks **English, Arabic, French, and Russian** and operates 7 days a week.\n\nReady to start? Click **Book Free Consultation** or WhatsApp us! 💬`,
   },
   {
     keywords: ['hospital', 'best hospital', 'top hospital', 'which hospital', 'recommend hospital', 'jci', 'accredited', 'accreditation'],
@@ -66,11 +66,11 @@ const KB: KBEntry[] = [
   },
   {
     keywords: ['appointment', 'book', 'consult', 'consultation', 'doctor', 'specialist', 'second opinion'],
-    reply: `Booking a free consultation is easy and takes less than 2 minutes!\n\n📋 **How to Book**\n1. Click the **"Book Free Consultation"** button on this page\n2. Fill in your name, country, and medical specialty\n3. Choose your preferred date and time\n4. Our case manager will confirm within 2 hours\n\nAlternatively, **WhatsApp us directly at +919877263279** for an instant response.\n\n💡 **For faster matching**, you can also upload your medical reports (scans, blood tests, doctor letters) — our medical team will review and recommend the best specialist within 24 hours.\n\nThe consultation is **100% free** with no obligation. Ready to get started? 💬`,
+    reply: `Requesting a callback takes less than 2 minutes!\n\n📋 **How it works**\n1. Click **"Request a callback"** on this page\n2. Fill in your name, phone, country and the treatment you need\n3. Our team calls you back within 24 hours\n\nOr **WhatsApp us at +919877263279**.\n\n💡 You do not need to send reports now. If we need them, we will ask after we speak and tell you how to send them securely.\n\nThe enquiry review is **free** with no obligation. Ready to get started? 💬`,
   },
   {
     keywords: ['whatsapp', 'contact', 'phone', 'call', 'email', 'reach', 'speak to', 'talk to', 'human', 'agent', 'manager'],
-    reply: `You can reach our team through multiple channels:\n\n📞 **Contact Tatvavera Health**\n• **WhatsApp**: +919877263279 (fastest, typically replies in < 30 min)\n• **Email**: tataverahealth@gmail.com\n• **Consultation Form**: Click "Book Free Consultation" on this page\n\n🕐 **Available**: 7 days a week, 8 AM – 10 PM IST\n📍 **Languages**: English, Arabic, French, Russian\n\nFor urgent medical cases, WhatsApp is recommended for the fastest response. Our case managers are medical professionals who can review your case and provide personalised guidance.\n\nWould you like me to help with anything else before you connect with the team? 💬`,
+    reply: `You can reach our team through multiple channels:\n\n📞 **Contact Tatvavera Health**\n• **WhatsApp / Phone**: +919877263279\n• **Email**: tatvaverahealth@gmail.com\n• **Consultation Form**: Click "Request a callback" on this page\n\n📍 **Languages**: English, Arabic, French, Russian\n\nFor urgent medical cases, WhatsApp is recommended for the fastest response. Our case managers are medical professionals who can review your case and provide personalised guidance.\n\nWould you like me to help with anything else before you connect with the team? 💬`,
   },
 ];
 
@@ -86,7 +86,7 @@ function smartReply(userText: string): string | null {
 }
 
 const FALLBACK =
-  "I'd be happy to help with that! For the most accurate guidance on your specific case, I recommend speaking directly with our medical team.\n\n📋 **Here's how to get personalised help:**\n• Click **Book Free Consultation** on this page\n• WhatsApp us at **+919877263279** (reply within 30 min)\n• Email: tataverahealth@gmail.com\n\nOur case managers speak English, Arabic, French, and Russian and are available 7 days a week. **All services are 100% free for patients!** 💬";
+  "I'd be happy to help with that! For the most accurate guidance on your specific case, I recommend speaking directly with our medical team.\n\n📋 **Here's how to get personalised help:**\n• Click **Book Free Consultation** on this page\n• WhatsApp us at **+919877263279** (reply within 30 min)\n• Email: tatvaverahealth@gmail.com\n\nOur case managers speak English, Arabic, French, and Russian and are available 7 days a week. **All services are 100% free for patients!** 💬";
 
 // ─── Gemini AI (optional — only used if GEMINI_API_KEY is set) ────────────────
 async function askGemini(messages: { role: string; content: string }[]): Promise<string | null> {

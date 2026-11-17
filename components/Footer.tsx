@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import BrandLogo from '@/components/BrandLogo';
-import { SITE_NAME, SITE_TAGLINE, CONTACT_EMAIL, CONTACT_PHONE, WHATSAPP_NUMBER } from '@/lib/constants';
+import { SITE_NAME, SITE_TAGLINE, CONTACT_EMAIL, CONTACT_PHONE, CONTACT_PHONE_TEL, WHATSAPP_NUMBER } from '@/lib/constants';
 
 const FOOTER_LINKS = {
   Treatments: [
@@ -33,8 +33,6 @@ const FOOTER_LINKS = {
   Legal: [
     { label: 'Privacy Policy', href: '/privacy' },
     { label: 'Terms of Use', href: '/terms' },
-    { label: 'Disclaimer', href: '/disclaimer' },
-    { label: 'Cookie Policy', href: '/cookies' },
   ],
 };
 
@@ -48,13 +46,13 @@ export default function Footer() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex flex-col md:flex-row items-center justify-between gap-4">
           <div>
             <h3 className="text-white font-bold text-xl mb-1">Ready to get started?</h3>
-            <p className="text-blue-100 text-sm">Talk to a medical coordinator today. 100% free, no obligation.</p>
+            <p className="text-blue-100 text-sm">Send a callback request. Our enquiry review is free and there is no obligation.</p>
           </div>
           <a
             href="/free-consultation"
             className="flex-shrink-0 inline-flex items-center gap-2 bg-white text-blue-700 hover:bg-blue-50 font-bold px-7 py-3 rounded-2xl transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5 active:scale-95 text-sm"
           >
-            📋 Get Free Consultation
+            📞 Request a callback
           </a>
         </div>
       </div>
@@ -76,7 +74,7 @@ export default function Footer() {
               <a href={`mailto:${CONTACT_EMAIL}`} className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors">
                 <span>✉️</span> {CONTACT_EMAIL}
               </a>
-              <a href={`tel:${CONTACT_PHONE}`} className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors">
+              <a href={`tel:${CONTACT_PHONE_TEL}`} className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors">
                 <span>📞</span> {CONTACT_PHONE}
               </a>
               <a

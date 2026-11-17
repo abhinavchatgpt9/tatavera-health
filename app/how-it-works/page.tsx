@@ -30,7 +30,7 @@ export default function HowItWorksPage() {
               href="/free-consultation"
               className="inline-flex items-center justify-center px-8 py-3 bg-white text-blue-700 font-bold rounded-2xl hover:bg-blue-50 transition-colors"
             >
-              Get a free consultation
+              Request a callback
             </Link>
           </div>
         </section>

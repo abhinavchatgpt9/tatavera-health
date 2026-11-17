@@ -170,6 +170,19 @@
 ::-webkit-scrollbar-thumb:hover { @apply bg-blue-400; }
 
 /* ─── Keyframes ─── */
+@keyframes pulseDraw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+.pulse-line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: pulseDraw 2.4s cubic-bezier(0.45, 0, 0.2, 1) 0.4s forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pulse-line { animation: none; stroke-dashoffset: 0; }
+}
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }

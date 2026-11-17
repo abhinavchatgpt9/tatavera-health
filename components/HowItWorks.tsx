@@ -1,14 +1,14 @@
-import { HOW_IT_WORKS_STEPS } from '@/lib/constants';
+import { HOW_IT_WORKS_STEPS, CALLBACK_TIMEFRAME } from '@/lib/constants';
 import AnimateIn from '@/components/AnimateIn';
 
 const TIMELINE_STEPS = [
-  { n: 1, title: 'Days 1–3: Initial Consultation', desc: 'Submit your medical details. Our team reviews your case and sends an initial quote within 24 hours.' },
-  { n: 2, title: 'Days 4–7: Surgeon Consultation', desc: 'Video call with your assigned surgeon. Discuss medical history, expectations, and finalize the treatment plan.' },
-  { n: 3, title: 'Days 8–30: Travel Preparation', desc: 'We arrange visas, book flights, coordinate airport pickups, and secure hospital accommodation.' },
-  { n: 4, title: 'Arrival Day: Pre-Op Tests', desc: 'Arrive at the hospital and complete final pre-operative tests. Meet your surgical team in person.' },
-  { n: 5, title: 'Days 2–7: Surgery & Recovery', desc: 'Procedure performed by your surgeon. Round-the-clock nursing care and pain management.' },
-  { n: 6, title: 'Day 8+: Discharge & Return', desc: 'Cleared after final check-up. Provided with full discharge summary and recovery instructions.' },
-  { n: 7, title: '6 Months: Ongoing Follow-Up', desc: 'Regular telemedicine consultations with your surgeon to ensure a complete, confident recovery.' },
+  { n: 1, title: 'Step 1: Your Callback', desc: `Send your enquiry. Our team calls you back ${CALLBACK_TIMEFRAME} to understand what you need. A hospital cost estimate is a separate step and follows once the hospital has reviewed your case.` },
+  { n: 2, title: 'Step 2: Specialist Consultation', desc: 'A video call with a specialist can be arranged to discuss your history, expectations and treatment plan. Timing depends on your case.' },
+  { n: 3, title: 'Step 3: Travel Preparation', desc: 'We help coordinate your visa invitation, flights, airport pickup and accommodation. Travel costs are paid by you.' },
+  { n: 4, title: 'Step 4: Arrival and Pre-Op Tests', desc: 'Arrive at the hospital and complete final pre-operative tests. Meet your surgical team in person.' },
+  { n: 5, title: 'Step 5: Treatment & Recovery', desc: 'Treatment is performed by the hospital team. The length of your stay depends on the procedure and how you recover.' },
+  { n: 6, title: 'Step 6: Discharge & Return', desc: 'Once cleared after the final check-up, you receive a discharge summary and recovery instructions.' },
+  { n: 7, title: 'Step 7: Follow-Up', desc: 'Follow-up arrangements depend on your treatment and hospital. Your case manager explains them for your case before you travel.' },
 ];
 
 const STEP_COLORS = [

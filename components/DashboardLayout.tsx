@@ -17,13 +17,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex">
       {/* Sidebar */}
-      <aside className="hidden md:flex flex-col w-60 bg-white border-r border-gray-100 fixed inset-y-0">
+      <aside className="hidden md:flex flex-col w-60 bg-white dark:bg-slate-900 border-r border-gray-100 dark:border-slate-800 fixed inset-y-0">
         {/* Logo */}
-        <div className="px-5 py-5 border-b border-gray-100">
+        <div className="px-5 py-5 border-b border-gray-100 dark:border-slate-800">
           <Link href="/" className="flex items-center gap-2">
-            <BrandLogo theme="light" />
+            <BrandLogo />
           </Link>
         </div>
 
@@ -35,7 +35,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${active ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${active ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-300' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'}`}
               >
                 <span className="text-lg">{item.emoji}</span>
                 {item.label}
@@ -45,21 +45,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </nav>
 
         {/* Bottom */}
-        <div className="px-3 py-4 border-t border-gray-100">
+        <div className="px-3 py-4 border-t border-gray-100 dark:border-slate-800">
           <Link
             href="/"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white transition-colors"
           >
             <span>🌐</span> Back to Website
           </Link>
-          <LogoutButton className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 transition-colors mt-1" />
+          <LogoutButton className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors mt-1" />
         </div>
       </aside>
 
       {/* Mobile Top Bar */}
-      <div className="md:hidden fixed top-0 inset-x-0 z-40 bg-white border-b border-gray-100 px-4 h-14 flex items-center justify-between">
+      <div className="md:hidden fixed top-0 inset-x-0 z-40 bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-4 h-14 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <BrandLogo theme="light" />
+          <BrandLogo />
         </Link>
         <div className="flex items-center gap-1 min-w-0">
           <div className="flex gap-2 overflow-x-auto">
@@ -67,7 +67,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex-shrink-0 p-2 rounded-lg text-base ${pathname === item.href ? 'bg-blue-50 text-blue-600' : 'text-gray-500'}`}
+                className={`flex-shrink-0 p-2 rounded-lg text-base ${pathname === item.href ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-300' : 'text-gray-500 dark:text-slate-400'}`}
               >
                 {item.emoji}
               </Link>

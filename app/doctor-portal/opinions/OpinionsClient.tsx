@@ -181,7 +181,7 @@ export function OpinionsClient({ opinions, cases }: { opinions: Opinion[]; cases
               className="rounded-2xl border border-slate-200 bg-white p-6 shadow-card dark:border-slate-800 dark:bg-slate-900"
             >
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                <h3 className="font-semibold text-slate-900 dark:text-white">{o.patient}</h3>
+                <h3 className="text-base font-semibold text-slate-900 dark:text-white">{o.patient}</h3>
                 <time dateTime={o.createdAt} className="text-xs text-slate-400 dark:text-slate-500">
                   {formatDate(o.createdAt)}
                 </time>

@@ -45,7 +45,7 @@ export default function SpotlightPage() {
             href="/free-consultation"
             className="inline-flex items-center justify-center px-8 py-3 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 transition-colors"
           >
-            Match me with a hospital
+            Request a callback
           </Link>
         </section>
       </main>

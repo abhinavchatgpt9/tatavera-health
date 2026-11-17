@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
-import { SITE_NAME, SITE_DESCRIPTION, SITE_TAGLINE, SITE_URL } from '@/lib/constants';
+import { SITE_NAME, SITE_DESCRIPTION, SITE_TAGLINE, SITE_URL, BRAND_ALTERNATE_NAMES } from '@/lib/constants';
 import { Analytics } from '@vercel/analytics/next';
 import ThemeProvider from '@/components/ThemeProvider';
 import WhatsAppWidget from '@/components/WhatsAppWidget';
@@ -13,9 +13,13 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+  applicationName: SITE_NAME,
+  alternates: { canonical: './' },
   title: `${SITE_NAME} — ${SITE_TAGLINE}`,
   description: SITE_DESCRIPTION,
   keywords: [
+    'Tatvavera Health', 'Tatvavera', 'tatvaverahealth',
     'medical tourism', 'hospital abroad', 'treatment abroad', 'medical travel',
     'heart surgery india', 'knee replacement abroad', 'cancer treatment',
     'liver transplant', 'IVF abroad', 'hair transplant turkey',
@@ -33,25 +37,49 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     title: `${SITE_NAME} — ${SITE_TAGLINE}`,
     description: SITE_DESCRIPTION,
-    images: [{ url: `${SITE_URL}/og-image.png`, width: 1200, height: 630, alt: SITE_NAME }],
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: SITE_NAME }],
   },
   twitter: {
     card: 'summary_large_image',
     title: `${SITE_NAME} — ${SITE_TAGLINE}`,
     description: SITE_DESCRIPTION,
+    images: ['/og-image.png'],
   },
 };
 
 const SCHEMA_ORG = {
   '@context': 'https://schema.org',
-  '@type': 'MedicalBusiness',
-  name: SITE_NAME,
-  description: SITE_DESCRIPTION,
-  url: SITE_URL,
-  logo: `${SITE_URL}/brand/Tatvavera-Header-Transparent.svg`,
-  sameAs: ['https://www.instagram.com/tatvaverahealth/'],
-  areaServed: 'Worldwide',
-  medicalSpecialty: ['Cardiology', 'Orthopedic Surgery', 'Oncology', 'Neurology', 'IVF'],
+  '@graph': [
+    {
+      '@type': 'WebSite',
+      '@id': `${SITE_URL}/#website`,
+      url: SITE_URL,
+      name: SITE_NAME,
+      alternateName: BRAND_ALTERNATE_NAMES,
+      inLanguage: 'en',
+      publisher: { '@id': `${SITE_URL}/#organization` },
+    },
+    {
+      '@type': ['Organization', 'MedicalBusiness'],
+      '@id': `${SITE_URL}/#organization`,
+      name: SITE_NAME,
+      alternateName: BRAND_ALTERNATE_NAMES,
+      description: SITE_DESCRIPTION,
+      url: SITE_URL,
+      logo: { '@type': 'ImageObject', url: `${SITE_URL}/icon-512.png`, width: 512, height: 512 },
+      image: `${SITE_URL}/og-image.png`,
+      sameAs: ['https://www.instagram.com/tatvaverahealth/'],
+      areaServed: 'Worldwide',
+      medicalSpecialty: ['Cardiology', 'Orthopedic Surgery', 'Oncology', 'Neurology', 'IVF'],
+      contactPoint: {
+        '@type': 'ContactPoint',
+        contactType: 'customer support',
+        telephone: '+91-98772-63279',
+        email: 'tatvaverahealth@gmail.com',
+        availableLanguage: ['English'],
+      },
+    },
+  ],
 };
 
 /* Inline script runs before React hydrates — prevents flash of wrong theme */
@@ -59,8 +87,7 @@ const ANTI_FLASH_SCRIPT = `
 (function(){
   try{
     var s=localStorage.getItem('theme');
-    var p=window.matchMedia('(prefers-color-scheme: dark)').matches;
-    if(s==='dark'||(s===null&&p)){document.documentElement.classList.add('dark');}
+    if(s==='dark'){document.documentElement.classList.add('dark');}
   }catch(e){}
 })();
 `;

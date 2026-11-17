@@ -7,7 +7,7 @@ import LeadForm from '@/components/LeadForm';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { SPECIALTIES, PROCEDURES } from '@/lib/constants';
+import { SPECIALTIES, PROCEDURES, CALLBACK_TIMEFRAME } from '@/lib/constants';
 
 export const metadata: Metadata = {
   title: 'Find Your Treatment | Tatvavera Health',
@@ -24,14 +24,25 @@ export default function TreatmentsPage({
 }: {
   searchParams: { q?: string; specialty?: string };
 }) {
-  const query = searchParams.q?.toLowerCase() || '';
-  const specialty = searchParams.specialty || '';
+  const rawQuery = (searchParams.q || '').trim().slice(0, 100);
+  const query = rawQuery.toLowerCase();
+  const terms = query.split(/\s+/).filter(Boolean);
+
+  // The filter buttons use the specialty slug (e.g. "cardiology"); older links with the display name still work.
+  const specialtyParam = (searchParams.specialty || '').toLowerCase();
+  const activeSpecialty = SPECIALTIES.find((s) => s.slug === specialtyParam || s.name.toLowerCase() === specialtyParam);
 
   const filtered = PROCEDURES.filter((p) => {
-    const matchesQuery = !query || p.name.toLowerCase().includes(query) || p.category.toLowerCase().includes(query) || p.description.toLowerCase().includes(query);
-    const matchesSpecialty = !specialty || p.category.toLowerCase() === specialty.toLowerCase();
+    const specialtyName = SPECIALTIES.find((s) => s.slug === p.specialty)?.name ?? '';
+    const haystack = `${p.name} ${p.category} ${p.description} ${specialtyName}`.toLowerCase();
+    const matchesQuery = terms.every((t) => haystack.includes(t));
+    const matchesSpecialty = !activeSpecialty || p.specialty === activeSpecialty.slug;
     return matchesQuery && matchesSpecialty;
   });
+
+  // Whatever the patient was looking at is carried into the enquiry form below.
+  const formTreatment = activeSpecialty ? `area:${activeSpecialty.slug}` : rawQuery && filtered.length === 0 ? 'other' : undefined;
+  const formDetails = rawQuery && filtered.length === 0 ? rawQuery : undefined;
 
   return (
     <>
@@ -79,7 +90,7 @@ export default function TreatmentsPage({
             <span className="flex items-center gap-1.5"><ClipboardList className="h-4 w-4 text-blue-500" aria-hidden="true" /> {PROCEDURES.length}+ Procedures Listed</span>
             <span className="flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-emerald-500" aria-hidden="true" /> All at JCI-Accredited Hospitals</span>
             <span className="flex items-center gap-1.5"><Wallet className="h-4 w-4 text-amber-500" aria-hidden="true" /> Save 60–85% vs Western Costs</span>
-            <span className="flex items-center gap-1.5"><Zap className="h-4 w-4 text-violet-500" aria-hidden="true" /> Free Quote in 2 Hours</span>
+            <span className="flex items-center gap-1.5"><Zap className="h-4 w-4 text-violet-500" aria-hidden="true" /> Callback {CALLBACK_TIMEFRAME}</span>
           </div>
         </div>
 
@@ -88,15 +99,15 @@ export default function TreatmentsPage({
           <div className="flex flex-wrap gap-2 mb-8">
             <Link
               href="/treatments"
-              className={`px-4 py-2 rounded-full text-sm font-medium border transition-all ${!specialty ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500'}`}
+              className={`px-4 py-2 rounded-full text-sm font-medium border transition-all ${!activeSpecialty ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500'}`}
             >
               All Treatments
             </Link>
             {SPECIALTIES.map((s) => (
               <Link
                 key={s.slug}
-                href={`/treatments?specialty=${encodeURIComponent(s.name)}`}
-                className={`px-4 py-2 rounded-full text-sm font-medium border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 ${specialty === s.name ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500'}`}
+                href={`/treatments?specialty=${s.slug}`}
+                className={`px-4 py-2 rounded-full text-sm font-medium border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 ${activeSpecialty?.slug === s.slug ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500'}`}
               >
                 <span aria-hidden="true">{s.emoji}</span> {s.name}
               </Link>
@@ -104,11 +115,11 @@ export default function TreatmentsPage({
           </div>
 
           {/* Results count */}
-          {(query || specialty) && (
+          {(query || activeSpecialty) && (
             <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">
               {filtered.length} result{filtered.length !== 1 ? 's' : ''}
-              {query && <> for <strong className="text-slate-800 dark:text-white">&quot;{query}&quot;</strong></>}
-              {specialty && <> in <strong className="text-slate-800 dark:text-white">{specialty}</strong></>}
+              {query && <> for <strong className="text-slate-800 dark:text-white">&quot;{rawQuery}&quot;</strong></>}
+              {activeSpecialty && <> in <strong className="text-slate-800 dark:text-white">{activeSpecialty.name}</strong></>}
             </p>
           )}
 
@@ -151,22 +162,44 @@ export default function TreatmentsPage({
             })}
           </div>
 
-          {filtered.length === 0 && (
+          {filtered.length === 0 ? (
             <EmptyState
               className="mt-4"
               icon={<Search className="h-6 w-6" aria-hidden="true" />}
-              title={`No treatments found for "${query}"`}
-              description="Our team covers 200+ procedures — let us match you manually."
+              title={
+                activeSpecialty && !query
+                  ? `${activeSpecialty.name}: tell us what you need`
+                  : `We do not list "${rawQuery}" yet, but we can still help`
+              }
+              description={
+                activeSpecialty && !query
+                  ? `We have not listed specific ${activeSpecialty.name} procedures with prices yet. Send a request and our team will find suitable options for you.`
+                  : 'Our list is not complete. Tell us what treatment you need and our team will look for suitable hospitals and doctors.'
+              }
               action={
                 <Button asChild>
-                  <Link href="/contact">Contact Us — We&apos;ll Find It</Link>
+                  <a href="#lead-form">Request a callback</a>
                 </Button>
               }
             />
+          ) : (
+            <div className="mt-8 rounded-2xl border border-blue-100 dark:border-blue-900/40 bg-blue-50/60 dark:bg-blue-900/10 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <p className="font-semibold text-slate-900 dark:text-white">Cannot see your treatment?</p>
+                <p className="text-sm text-slate-600 dark:text-slate-300">This list is not complete. Tell us what you need and we will look for options for you.</p>
+              </div>
+              <Button asChild>
+                <a href="#lead-form">Request a callback</a>
+              </Button>
+            </div>
           )}
+
+          <p className="mt-6 text-xs text-slate-500 dark:text-slate-400">
+            Estimated costs are indicative ranges for the procedure and the usual hospital stay. Flights, accommodation, visa, medicines after discharge and follow-up are normally extra. The hospital estimate we arrange for your case confirms what is included. Our enquiry review and coordination support are free.
+          </p>
         </div>
 
-        <LeadForm />
+        <LeadForm defaultTreatment={formTreatment} defaultDetails={formDetails} />
       </main>
       <Footer />
     </>

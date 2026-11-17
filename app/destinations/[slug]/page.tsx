@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import LeadForm from '@/components/LeadForm';
-import { DESTINATIONS, FEATURED_HOSPITALS, TESTIMONIALS } from '@/lib/constants';
+import { DESTINATIONS, FEATURED_HOSPITALS, TESTIMONIALS, CALLBACK_TIMEFRAME } from '@/lib/constants';
 
 type Props = { params: { slug: string } };
 
@@ -165,9 +165,9 @@ export default function DestinationDetailPage({ params }: Props) {
               <div className="bg-white border border-gray-200 rounded-2xl p-5 sticky top-24">
                 <h3 className="font-bold text-gray-900 mb-3">Plan Your Trip to {dest.country}</h3>
                 <a href="#lead-form" className="block w-full text-center py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors mb-3">
-                  Get Free Consultation
+                  Request a callback
                 </a>
-                <p className="text-xs text-gray-400 text-center mb-4">Free · No obligation · 24hr response</p>
+                <p className="text-xs text-gray-400 text-center mb-4">Our review is free · No obligation · We reply {CALLBACK_TIMEFRAME}</p>
                 <div className="space-y-2 text-sm text-gray-600">
                   <p>✅ Visa assistance included</p>
                   <p>✅ Airport transfer arranged</p>

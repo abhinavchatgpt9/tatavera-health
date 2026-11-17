@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import LeadForm from '@/components/LeadForm';
-import { PROCEDURES, FEATURED_HOSPITALS, FEATURED_DOCTORS, TESTIMONIALS, FAQ } from '@/lib/constants';
+import { PROCEDURES, FEATURED_HOSPITALS, FEATURED_DOCTORS, TESTIMONIALS, FAQ, CALLBACK_TIMEFRAME } from '@/lib/constants';
 
 type Props = { params: { slug: string } };
 
@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!procedure) return {};
   return {
     title: `${procedure.name} Abroad | Cost & Hospitals | Tatvavera Health`,
-    description: `Get ${procedure.name} abroad from $${procedure.costFrom.toLocaleString()}. Compare top hospitals, doctors, recovery time and get a free quote.`,
+    description: `${procedure.name} abroad: estimated cost from $${procedure.costFrom.toLocaleString()}, recovery time and how to request a callback and a hospital estimate for your case.`,
   };
 }
 
@@ -66,13 +66,16 @@ export default function TreatmentDetailPage({ params }: Props) {
                     <p className="font-bold text-gray-900">{procedure.hospitalStay}</p>
                   </div>
                 </div>
+                <p className="text-xs text-gray-500 mt-3 max-w-xl">
+                  The estimated cost is an indicative range for the procedure and the usual hospital stay. Flights, accommodation, visa, medicines after discharge and follow-up are normally extra. The hospital estimate for your case confirms what is included.
+                </p>
               </div>
               <div className="lg:min-w-60">
                 <div className="bg-blue-600 text-white rounded-2xl p-6 text-center shadow-lg">
-                  <p className="text-blue-100 text-sm mb-1">Get a personalised quote</p>
-                  <p className="text-2xl font-bold mb-3">Free &amp; No Obligation</p>
+                  <p className="text-blue-100 text-sm mb-1">Hospital estimate for your case</p>
+                  <p className="text-2xl font-bold mb-3">Free Enquiry Review</p>
                   <a href="#lead-form" className="inline-block w-full py-3 bg-white text-blue-700 font-bold rounded-xl hover:bg-blue-50 transition-colors">
-                    Get Free Quote
+                    Request a callback
                   </a>
                 </div>
               </div>
@@ -192,15 +195,15 @@ export default function TreatmentDetailPage({ params }: Props) {
             {/* Sidebar */}
             <div className="space-y-6">
               <div className="bg-white border border-gray-200 rounded-2xl p-5 sticky top-24">
-                <h3 className="font-bold text-gray-900 mb-4">Get a Free Quote</h3>
-                <p className="text-gray-500 text-sm mb-4">Our team will review your case and send a personalised cost estimate within 24 hours.</p>
+                <h3 className="font-bold text-gray-900 mb-4">Request a Cost Estimate</h3>
+                <p className="text-gray-500 text-sm mb-4">Our team calls you back {CALLBACK_TIMEFRAME} to understand your case. A hospital estimate for your treatment follows once the hospital has reviewed it. Timing depends on your case.</p>
                 <a href="#lead-form" className="block w-full text-center py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors">
-                  Get Free Quote
+                  Request a callback
                 </a>
                 <div className="mt-4 pt-4 border-t border-gray-100 space-y-2 text-sm text-gray-500">
-                  <p className="flex items-center gap-2">✅ 100% free service</p>
-                  <p className="flex items-center gap-2">✅ No obligation</p>
-                  <p className="flex items-center gap-2">✅ Reply within 24 hours</p>
+                  <p className="flex items-start gap-2">✅ <span>Free: our enquiry review and coordination</span></p>
+                  <p className="flex items-start gap-2">💳 <span>You pay: treatment, hospital stay, travel and follow-up</span></p>
+                  <p className="flex items-start gap-2">✅ <span>No obligation</span></p>
                 </div>
               </div>
             </div>
@@ -208,8 +211,8 @@ export default function TreatmentDetailPage({ params }: Props) {
         </div>
 
         {/* Lead Form */}
-        <div id="lead-form">
-          <LeadForm />
+        <div>
+          <LeadForm defaultTreatment={`procedure:${procedure.id}`} />
         </div>
       </main>
       <Footer />

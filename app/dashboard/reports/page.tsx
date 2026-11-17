@@ -101,21 +101,21 @@ export default function ReportsPage() {
     <DashboardLayout>
       <div className="p-6 lg:p-10 max-w-4xl">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">My Medical Reports</h1>
-          <p className="text-gray-500 mt-1">Upload and manage your medical documents securely.</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My Medical Reports</h1>
+          <p className="text-gray-500 dark:text-slate-400 mt-1">Upload and manage your medical documents securely.</p>
         </div>
 
         {/* Upload card */}
-        <div className="bg-white border-2 border-dashed border-blue-300 rounded-2xl p-8 text-center mb-8 hover:border-blue-500 transition-colors">
+        <div className="bg-white dark:bg-slate-900 border-2 border-dashed border-blue-300 dark:border-blue-800 rounded-2xl p-8 text-center mb-8 hover:border-blue-500 transition-colors">
           <div className="text-4xl mb-3">📤</div>
-          <h2 className="font-bold text-gray-900 mb-1">Upload a Report</h2>
-          <p className="text-gray-500 text-sm mb-4">PDF, JPG, PNG up to 20 MB. Stored encrypted on secure cloud.</p>
+          <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-1">Upload a Report</h2>
+          <p className="text-gray-500 dark:text-slate-400 text-sm mb-4">PDF, JPG, PNG up to 20 MB. Stored encrypted on secure cloud.</p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-400 bg-white"
+              className="px-4 py-2 border border-gray-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:border-blue-400 bg-white dark:bg-slate-900 dark:text-slate-100"
             >
               {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
@@ -137,7 +137,7 @@ export default function ReportsPage() {
         {loading && (
           <div className="space-y-2">
             {[0, 1, 2].map((i) => (
-              <div key={i} className="h-[68px] bg-gray-100 rounded-xl animate-pulse" />
+              <div key={i} className="h-[68px] bg-gray-100 dark:bg-slate-800 rounded-xl animate-pulse" />
             ))}
           </div>
         )}
@@ -163,13 +163,13 @@ export default function ReportsPage() {
           if (catReports.length === 0) return null;
           return (
             <div key={cat} className="mb-6">
-              <h2 className="font-bold text-gray-900 mb-3">{cat}</h2>
+              <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-3">{cat}</h2>
               <div className="space-y-2">
                 {catReports.map((report) => (
-                  <div key={report.id} className="flex items-center gap-4 bg-white border border-gray-100 rounded-xl p-4">
+                  <div key={report.id} className="flex items-center gap-4 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl p-4">
                     <span className="text-2xl flex-shrink-0">📄</span>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-gray-900 truncate">{report.fileName}</p>
+                      <p className="font-medium text-gray-900 dark:text-white truncate">{report.fileName}</p>
                       <p className="text-xs text-gray-400">{formatSize(report.fileSize)} · {new Date(report.createdAt).toLocaleDateString()}</p>
                     </div>
                     <div className="flex gap-3 flex-shrink-0">

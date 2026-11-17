@@ -7,7 +7,7 @@ const SUBJECT_2FA = `Your ${SITE_NAME} login code`;
 // Branded HTML wrapper shared by every transactional email. Kept table-based
 // with inline styles (no external CSS/images) since that's what actually
 // renders consistently across Gmail, Outlook, and mobile mail clients.
-function brandedEmailShell(opts: { preheader: string; bodyHtml: string }) {
+function brandedEmailShell(opts: { preheader: string; bodyHtml: string; footerHtml?: string }) {
   return `
 <!DOCTYPE html>
 <html lang="en">
@@ -51,11 +51,11 @@ function brandedEmailShell(opts: { preheader: string; bodyHtml: string }) {
           <!-- Footer -->
           <tr>
             <td style="padding:20px 32px 28px; border-top:1px solid #e2e8f0;">
-              <p style="margin:0; color:#94a3b8; font-size:12px; line-height:1.6;">
+              ${opts.footerHtml ?? `              <p style="margin:0; color:#94a3b8; font-size:12px; line-height:1.6;">
                 This email was sent by ${SITE_NAME} because it's associated with an account on
                 <a href="${SITE_URL}" style="color:#2563eb; text-decoration:none;">${SITE_URL.replace('https://', '')}</a>.
                 If you didn't request this, you can safely ignore it — no changes were made to your account.
-              </p>
+              </p>`}
               <p style="margin:8px 0 0; color:#cbd5e1; font-size:12px;">
                 Need help? Contact us at <a href="mailto:${CONTACT_EMAIL}" style="color:#94a3b8;">${CONTACT_EMAIL}</a>
               </p>
@@ -163,4 +163,68 @@ export async function sendTwoFactorEmail(to: string, code: string): Promise<void
       '[tatavera-otp] Email not delivered; set RESEND_API_KEY/SMTP or AUTH_DEV_OTP=1 for local prod builds. Code was logged above.'
     );
   }
+}
+
+
+function escapeHtml(value: string): string {
+  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+export interface EnquiryNotice {
+  reference: string;
+  name: string;
+  phone: string;
+  email: string;
+  country: string;
+  treatment: string;
+  doctor?: string;
+  hospital?: string;
+  contactVia?: string;
+}
+
+/**
+ * Alerts the team that a new patient enquiry was saved. Never throws and never blocks the patient for long: the
+ * enquiry is already in the database, this email is only a prompt to go and call the patient.
+ * Deliberately leaves out the free-text description so medical details are not copied into email.
+ * Goes to ENQUIRY_NOTIFY_EMAIL, else ADMIN_EMAIL, else the public contact address.
+ */
+export async function sendEnquiryNotification(notice: EnquiryNotice): Promise<boolean> {
+  const to = process.env.ENQUIRY_NOTIFY_EMAIL || process.env.ADMIN_EMAIL || CONTACT_EMAIL;
+  const subject = `New enquiry ${notice.reference}: ${notice.treatment}`;
+  const row = (label: string, value?: string) =>
+    value
+      ? `<tr><td style="padding:6px 12px 6px 0; color:#64748b; font-size:14px; vertical-align:top;">${label}</td><td style="padding:6px 0; color:#0f172a; font-size:14px; font-weight:600;">${escapeHtml(value)}</td></tr>`
+      : '';
+  const bodyHtml = `
+    <p style="margin:0 0 16px; color:#0f172a; font-size:16px; line-height:1.6;">A patient has asked for a callback. Please call them back and mark the enquiry in the dashboard.</p>
+    <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 16px;">
+      ${row('Reference', notice.reference)}
+      ${row('Name', notice.name)}
+      ${row('Phone', notice.phone)}
+      ${row('Email', notice.email)}
+      ${row('Country', notice.country)}
+      ${row('Treatment', notice.treatment)}
+      ${row('Doctor', notice.doctor)}
+      ${row('Hospital', notice.hospital)}
+      ${row('Prefers', notice.contactVia)}
+    </table>
+    <p style="margin:0; color:#64748b; font-size:13px; line-height:1.6;">The patient's own words are in the enquiry dashboard: ${escapeHtml(SITE_URL)}/admin-portal</p>
+  `;
+  const html = brandedEmailShell({
+    preheader: `${notice.name} · ${notice.treatment}`,
+    bodyHtml,
+    footerHtml: `<p style="margin:0; color:#94a3b8; font-size:12px; line-height:1.6;">Internal alert from the ${SITE_NAME} website enquiry form.</p>`,
+  });
+
+  const withTimeout = <T,>(work: Promise<T>, ms: number) =>
+    Promise.race([work, new Promise<T>((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))]);
+
+  try {
+    if (await withTimeout(sendViaResend(to, subject, html), 5000).catch(() => false)) return true;
+    if (await withTimeout(sendViaSmtp(to, subject, html), 5000).catch(() => false)) return true;
+  } catch (e) {
+    console.error('[enquiry-notify] provider error', e);
+  }
+  console.warn(`[enquiry-notify] Email not delivered for enquiry ${notice.reference}; it is saved and visible in the dashboard.`);
+  return false;
 }

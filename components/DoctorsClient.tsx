@@ -107,7 +107,7 @@ export default function DoctorsClient({ specialtyFilter }: DoctorsClientProps) {
               onClick={() => openBooking(doctor.name)}
               className="mt-auto w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all hover:shadow-md hover:shadow-blue-500/20 active:scale-95"
             >
-              📅 Book Free Consultation
+              📞 Request a callback
             </button>
           </div>
         ))}

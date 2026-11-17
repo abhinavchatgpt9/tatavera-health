@@ -3,15 +3,26 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { isValidE164 } from '@/lib/phone';
 import { getAuthUser } from '@/lib/auth';
+import { CALLBACK_TIMEFRAME } from '@/lib/constants';
+import { MIN_OTHER_DESCRIPTION, OTHER_TREATMENT_LABEL, enquiryReference } from '@/lib/enquiry';
+import { sendEnquiryNotification } from '@/lib/email';
+
+/** An identical enquiry (same email, phone and text) inside this window is treated as a repeat click, not a new request. */
+const DUPLICATE_WINDOW_MS = 10 * 60 * 1000;
 
 const LeadSchema = z.object({
   name: z.string().trim().min(2, 'Please enter your full name').max(100),
   email: z.string().trim().toLowerCase().email('Please enter a valid email').max(254),
   phone: z.string().trim().refine(isValidE164, 'Please enter a valid phone number'),
   country: z.string().trim().min(2, 'Country is required').max(100),
-  procedure: z.string().trim().min(1, 'Please select a procedure').max(200),
+  procedure: z.string().trim().min(1, 'Please select a treatment').max(200),
   message: z.string().trim().max(2000, 'Message is too long').optional(),
+  contactVia: z.string().trim().max(40).optional(),
+  doctor: z.string().trim().max(150).optional(),
+  hospital: z.string().trim().max(150).optional(),
   agreeTerms: z.boolean(),
+  // Hidden field real visitors never fill; automated form fillers often do.
+  website: z.string().max(200).optional(),
 });
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
@@ -25,15 +36,51 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     }
 
     if (!parsed.data.agreeTerms) {
-      return NextResponse.json({ success: false, message: 'Please agree to the terms.' }, { status: 400 });
+      return NextResponse.json({ success: false, message: 'Please agree to the Privacy Policy and Terms.' }, { status: 400 });
     }
 
-    const { name, email, phone, country, procedure, message } = parsed.data;
+    // Bot trap: pretend it worked, store nothing.
+    if (parsed.data.website) {
+      return NextResponse.json({ success: true, message: 'Your request was received.', data: { reference: '' } }, { status: 201 });
+    }
+
+    const { name, email, phone, country, procedure, message, contactVia, doctor, hospital } = parsed.data;
+
+    if (procedure === OTHER_TREATMENT_LABEL && (message?.length ?? 0) < MIN_OTHER_DESCRIPTION) {
+      return NextResponse.json(
+        { success: false, message: 'Please describe the treatment you need in a few words.' },
+        { status: 400 }
+      );
+    }
+
     const ip = req.headers.get('x-forwarded-for') || req.ip || 'unknown';
     // Attach the submission to the logged-in patient, if any, so admins can
     // trace it back to an existing account instead of treating every
     // submission as an anonymous, unrelated contact.
     const auth = getAuthUser(req);
+
+    const storedMessage =
+      `[Treatment: ${procedure}]` +
+      (doctor ? ` [Doctor: ${doctor}]` : '') +
+      (hospital ? ` [Hospital: ${hospital}]` : '') +
+      (contactVia ? ` [Contact via: ${contactVia}]` : '') +
+      (message ? ' ' + message : '');
+
+    // Repeat click or double submit: return the enquiry we already saved instead of creating a second one.
+    const existing = await prisma.enquiry.findFirst({
+      where: { email, phone, message: storedMessage, createdAt: { gte: new Date(Date.now() - DUPLICATE_WINDOW_MS) } },
+      select: { id: true },
+    });
+    if (existing) {
+      return NextResponse.json(
+        {
+          success: true,
+          message: `Your request was received. Our team will call you back ${CALLBACK_TIMEFRAME}.`,
+          data: { id: existing.id, reference: enquiryReference(existing.id) },
+        },
+        { status: 200 }
+      );
+    }
 
     const enquiry = await prisma.enquiry.create({
       data: {
@@ -42,22 +89,32 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         email,
         phone,
         country,
-        message: `[Treatment: ${procedure}]${message ? ' ' + message : ''}`,
+        message: storedMessage,
         ipAddress: ip,
         userAgent: req.headers.get('user-agent') || 'unknown',
         source: req.headers.get('referer') || 'lead-form',
       },
     });
 
-    // TODO: Send team notification email
-    // TODO: Send patient confirmation email
-    // TODO: Push to CRM
+    // The enquiry is already saved, so a failed email never fails the request. The team can always find it in the
+    // enquiry dashboard; the email is an extra alert (it needs RESEND_API_KEY or SMTP settings on the server).
+    await sendEnquiryNotification({
+      reference: enquiryReference(enquiry.id),
+      name,
+      phone,
+      email,
+      country,
+      treatment: procedure,
+      doctor,
+      hospital,
+      contactVia,
+    });
 
     return NextResponse.json(
       {
         success: true,
-        message: 'Your enquiry was submitted. Our team will contact you within 24 hours.',
-        data: { id: enquiry.id, name, email, createdAt: enquiry.createdAt },
+        message: `Your request was received. Our team will call you back ${CALLBACK_TIMEFRAME}.`,
+        data: { id: enquiry.id, reference: enquiryReference(enquiry.id), createdAt: enquiry.createdAt },
       },
       { status: 201 }
     );

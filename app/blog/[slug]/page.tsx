@@ -51,15 +51,15 @@ export default function BlogArticlePage({ params }: Props) {
             <h2 className="text-2xl font-bold text-gray-900 mt-8">Cost Savings</h2>
             <p>Patients typically save 60-85% compared to Western pricing, without compromising on quality. All our partner hospitals hold JCI or NABH accreditation — the same international standards as leading Western hospitals.</p>
             <h2 className="text-2xl font-bold text-gray-900 mt-8">Planning Your Journey</h2>
-            <p>Tatvavera Health handles everything — from initial case review and hospital matching to visa assistance, airport transfers, accommodation, and post-treatment follow-up. Our service is completely free for patients.</p>
+            <p>Tatvavera Health handles everything — from initial case review and hospital matching to visa assistance, airport transfers, accommodation, and post-treatment follow-up. Our enquiry review and coordination are free for patients; you pay for treatment, travel and follow-up.</p>
           </div>
 
           {/* CTA */}
           <div className="mt-12 p-6 bg-blue-50 border border-blue-100 rounded-2xl text-center">
             <h3 className="text-xl font-bold text-gray-900 mb-2">Ready to Plan Your Treatment?</h3>
-            <p className="text-gray-600 mb-4">Talk to our medical team — free consultation, no obligation.</p>
-            <Link href="/contact" className="inline-block px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors">
-              Get Free Consultation
+            <p className="text-gray-600 mb-4">Send a callback request. Our enquiry review is free and there is no obligation.</p>
+            <Link href="/free-consultation" className="inline-block px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors">
+              Request a callback
             </Link>
           </div>
 

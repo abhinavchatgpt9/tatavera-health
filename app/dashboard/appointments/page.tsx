@@ -26,7 +26,7 @@ export default async function PatientAppointmentsPage() {
       <li className="rounded-2xl border border-slate-200 bg-white p-5 shadow-card dark:border-slate-800 dark:bg-slate-900">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
-            <h3 className="font-semibold text-slate-900 dark:text-white">{a.doctor}</h3>
+            <h3 className="text-base font-semibold text-slate-900 dark:text-white">{a.doctor}</h3>
             <p className="text-sm text-slate-500 dark:text-slate-400">{a.specialty}</p>
             <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
               {a.type === 'VIDEO' ? 'Video consultation' : 'In-person visit'} · {formatDateTime(a.scheduledAt)} ·{' '}

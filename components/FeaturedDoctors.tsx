@@ -102,7 +102,7 @@ export default function FeaturedDoctors() {
                     onClick={(e) => openBooking(doctor.name, e)}
                     className="mt-auto w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all duration-200 hover:shadow-md hover:shadow-blue-500/20 active:scale-95"
                   >
-                    📅 Book Consultation — Free
+                    📞 Request a callback
                   </button>
                 </div>
               </AnimateIn>

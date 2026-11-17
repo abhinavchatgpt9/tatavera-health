@@ -68,7 +68,7 @@ export default async function AdminCmsPage() {
               className="rounded-2xl border border-slate-200 bg-white p-5 shadow-card transition-colors hover:border-blue-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-blue-700"
             >
               <div className="flex items-baseline justify-between gap-3">
-                <h2 className="font-semibold text-slate-900 dark:text-white">{section.title}</h2>
+                <h2 className="text-base font-semibold text-slate-900 dark:text-white">{section.title}</h2>
                 <span className="text-2xl font-bold text-slate-900 dark:text-white">{section.count}</span>
               </div>
               <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{section.description}</p>

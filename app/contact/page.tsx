@@ -2,11 +2,11 @@ import type { Metadata } from 'next';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ContactForm from './ContactForm';
-import { CONTACT_EMAIL, CONTACT_PHONE, WHATSAPP_NUMBER } from '@/lib/constants';
+import { CALLBACK_TIMEFRAME, CONTACT_EMAIL, CONTACT_PHONE, CONTACT_PHONE_TEL, WHATSAPP_NUMBER } from '@/lib/constants';
 
 export const metadata: Metadata = {
-  title: 'Contact Us | Tatavera Health',
-  description: 'Get in touch with Tatavera Health via WhatsApp, phone, or email. Our team responds within 24 hours, 7 days a week.',
+  title: 'Contact Us | Tatvavera Health',
+  description: `Get in touch with Tatvavera Health by phone, WhatsApp or email, or send a callback request. Our team replies ${CALLBACK_TIMEFRAME}.`,
 };
 
 export default function ContactPage() {
@@ -17,7 +17,7 @@ export default function ContactPage() {
         <section className="bg-gradient-to-br from-blue-50 to-white py-12 border-b border-gray-100">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h1 className="text-4xl font-bold text-gray-900 mb-3">Contact Us</h1>
-            <p className="text-gray-600">Our team is available 7 days a week to answer your questions.</p>
+            <p className="text-gray-600">Call, message or email us, or send a callback request below. Our team replies {CALLBACK_TIMEFRAME}.</p>
           </div>
         </section>
 
@@ -30,17 +30,17 @@ export default function ContactPage() {
                 <div className="flex gap-4">
                   <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">💬</div>
                   <div>
-                    <p className="font-bold text-gray-900">WhatsApp (Fastest)</p>
-                    <a href={`https://wa.me/${WHATSAPP_NUMBER.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-green-600 font-medium hover:underline">{WHATSAPP_NUMBER}</a>
-                    <p className="text-gray-500 text-sm mt-0.5">Available 24/7 in English, Arabic, French, Russian</p>
+                    <p className="font-bold text-gray-900">WhatsApp</p>
+                    <a href={`https://wa.me/${WHATSAPP_NUMBER.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-green-600 font-medium hover:underline">{CONTACT_PHONE}</a>
+                    <p className="text-gray-500 text-sm mt-0.5">Message us and we reply {CALLBACK_TIMEFRAME}</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
                   <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">📞</div>
                   <div>
                     <p className="font-bold text-gray-900">Phone</p>
-                    <a href={`tel:${CONTACT_PHONE}`} className="text-blue-600 font-medium hover:underline">{CONTACT_PHONE}</a>
-                    <p className="text-gray-500 text-sm mt-0.5">Mon–Sat, 9am–8pm IST</p>
+                    <a href={`tel:${CONTACT_PHONE_TEL}`} className="text-blue-600 font-medium hover:underline">{CONTACT_PHONE}</a>
+                    <p className="text-gray-500 text-sm mt-0.5">Same number as WhatsApp. If we miss your call, we call back {CALLBACK_TIMEFRAME}</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
@@ -48,7 +48,7 @@ export default function ContactPage() {
                   <div>
                     <p className="font-bold text-gray-900">Email</p>
                     <a href={`mailto:${CONTACT_EMAIL}`} className="text-purple-600 font-medium hover:underline">{CONTACT_EMAIL}</a>
-                    <p className="text-gray-500 text-sm mt-0.5">Response within 24 hours</p>
+                    <p className="text-gray-500 text-sm mt-0.5">We reply {CALLBACK_TIMEFRAME}</p>
                   </div>
                 </div>
               </div>
@@ -61,7 +61,8 @@ export default function ContactPage() {
 
             {/* Contact Form */}
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Send Us a Message</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Request a Callback</h2>
+              <p className="text-gray-500 text-sm mb-6">Tell us what you need and we will call you back {CALLBACK_TIMEFRAME}. Questions that are not about a treatment: choose &quot;Other / Not sure&quot;.</p>
               <ContactForm />
             </div>
           </div>

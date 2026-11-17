@@ -9,6 +9,12 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Softer, navy-leaning dark surfaces (default slate-950/900/800 are near black)
+        slate: {
+          800: '#26344f',
+          900: '#1b2840',
+          950: '#131e33',
+        },
         primary: '#2563EB',
         'primary-dark': '#1d4ed8',
         secondary: '#0891b2',

@@ -7,7 +7,7 @@ import TrustStats from '@/components/TrustStats';
 
 export const metadata: Metadata = {
   title: 'Why Choose Tatvavera Health',
-  description: 'Accredited hospitals, transparent pricing, multilingual support, and 100% free services for patients.',
+  description: 'Accredited hospitals, clear cost estimates, multilingual support and free enquiry review and coordination.',
 };
 
 export default function WhyChooseUsPage() {
@@ -30,7 +30,7 @@ export default function WhyChooseUsPage() {
             href="/free-consultation"
             className="inline-flex items-center justify-center px-8 py-3 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 transition-colors"
           >
-            Start with a free assessment
+            Request a callback
           </Link>
         </section>
       </main>

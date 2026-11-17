@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import LeadForm from '@/components/LeadForm';
-import { FEATURED_HOSPITALS, FEATURED_DOCTORS, TESTIMONIALS } from '@/lib/constants';
+import { FEATURED_HOSPITALS, FEATURED_DOCTORS, TESTIMONIALS, CALLBACK_TIMEFRAME } from '@/lib/constants';
 
 type Props = { params: { slug: string } };
 
@@ -169,9 +169,9 @@ export default function HospitalProfilePage({ params }: Props) {
               <div className="bg-white border border-gray-200 rounded-2xl p-5 sticky top-24">
                 <h3 className="font-bold text-gray-900 mb-3">Enquire About This Hospital</h3>
                 <a href="#lead-form" className="block w-full text-center py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors mb-3">
-                  Get Free Quote
+                  Request a callback
                 </a>
-                <p className="text-xs text-gray-400 text-center">Free · No obligation · 24hr response</p>
+                <p className="text-xs text-gray-400 text-center">Our review is free · No obligation · We reply {CALLBACK_TIMEFRAME}</p>
               </div>
 
               <div className="bg-green-50 border border-green-200 rounded-2xl p-5">
@@ -187,7 +187,7 @@ export default function HospitalProfilePage({ params }: Props) {
         </div>
 
         <div id="lead-form">
-          <LeadForm />
+          <LeadForm hospital={hospital.name} />
         </div>
       </main>
       <Footer />

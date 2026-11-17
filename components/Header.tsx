@@ -115,8 +115,8 @@ export default function Header() {
             href="/free-consultation"
             className="inline-flex items-center gap-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-all duration-200 shadow-sm hover:shadow-blue-500/30 hover:shadow-md active:scale-95"
           >
-            <span className="hidden sm:inline">Free Consultation</span>
-            <span className="sm:hidden">Free Quote</span>
+            <span className="hidden sm:inline">Request a callback</span>
+            <span className="sm:hidden">Callback</span>
           </Link>
 
           {/* Mobile Menu Toggle */}
@@ -178,7 +178,7 @@ export default function Header() {
                 className="text-center py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Get Free Consultation
+                Request a callback
               </Link>
             </div>
           </div>

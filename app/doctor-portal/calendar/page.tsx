@@ -48,7 +48,7 @@ export default async function DoctorCalendarPage() {
                   key={dayKey}
                   className="rounded-2xl border border-slate-200 bg-white p-6 shadow-card dark:border-slate-800 dark:bg-slate-900"
                 >
-                  <h2 className="mb-4 font-bold text-slate-900 dark:text-white">
+                  <h2 className="mb-4 text-base font-semibold text-slate-900 dark:text-white">
                     {date.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
                   </h2>
                   <ul className="space-y-3">

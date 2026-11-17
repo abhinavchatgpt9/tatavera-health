@@ -47,20 +47,35 @@ export default async function DashboardPage() {
               </span>
             </div>
 
-            <ol className="flex items-start justify-between gap-1">
+            <ol className="relative grid grid-cols-4 gap-y-5 sm:grid-cols-8 sm:gap-y-0">
               {JOURNEY_STAGES.map((stage, i) => {
                 const done = currentIndex >= 0 && i <= currentIndex;
+                const current = i === currentIndex;
                 return (
-                  <li key={stage.key} className="flex flex-1 flex-col items-center text-center">
+                  <li
+                    key={stage.key}
+                    aria-current={current ? 'step' : undefined}
+                    className="relative flex flex-col items-center text-center"
+                  >
+                    {i > 0 && (
+                      <span
+                        aria-hidden="true"
+                        className={`absolute right-1/2 top-3 hidden h-0.5 w-full sm:block ${done ? 'bg-white' : 'bg-white/25'}`}
+                      />
+                    )}
                     <span
                       aria-hidden="true"
-                      className={`mb-2 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${
-                        done ? 'bg-white text-blue-600' : 'bg-white/25 text-white/70'
+                      className={`relative z-10 mb-2 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${
+                        current
+                          ? 'bg-white text-blue-600 ring-4 ring-white/30'
+                          : done
+                            ? 'bg-white text-blue-600'
+                            : 'bg-blue-500 text-white/80 ring-1 ring-white/30'
                       }`}
                     >
-                      {done ? '✓' : i + 1}
+                      {done && !current ? '✓' : i + 1}
                     </span>
-                    <span className={`text-[0.65rem] leading-tight ${done ? 'text-white' : 'text-white/60'}`}>
+                    <span className={`px-0.5 text-xs leading-tight ${current ? 'font-semibold text-white' : done ? 'text-white/90' : 'text-white/60'}`}>
                       {stage.label}
                     </span>
                   </li>
@@ -74,7 +89,7 @@ export default async function DashboardPage() {
           </div>
         ) : (
           <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-card dark:border-slate-800 dark:bg-slate-900">
-            <h2 className="font-bold text-slate-900 dark:text-white">No case open yet</h2>
+            <h2 className="text-base font-semibold text-slate-900 dark:text-white">No case open yet</h2>
             <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
               Once you submit an enquiry and a case manager picks it up, your treatment journey will show here step by
               step.{' '}

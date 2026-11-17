@@ -44,8 +44,9 @@ export default function ProcedureCards() {
         <div className="max-w-3xl mx-auto text-center mb-16">
           <h2 className="mb-6">Featured Procedures</h2>
           <p className="text-lg text-text-muted">
-            Explore our most requested procedures. All prices are inclusive of surgery, hospital
-            stay, and 6 months of post-operative telemedicine follow-up.
+            Explore our most requested procedures. Prices are indicative ranges for the procedure and the
+            usual hospital stay. Flights, accommodation, visa, medicines after discharge and follow-up are
+            normally extra. The hospital estimate for your case confirms what is included.
           </p>
         </div>
 
@@ -101,8 +102,8 @@ export default function ProcedureCards() {
                       </div>
                     </div>
 
-                    <a href="/free-consultation" className="btn-primary w-full text-center">
-                      Get Quote for {procedure.name.split('(')[0].trim()}
+                    <a href={`/free-consultation?treatment=${procedure.id}`} className="btn-primary w-full text-center">
+                      Request a callback for {procedure.name.split('(')[0].trim()}
                     </a>
                   </div>
                 );

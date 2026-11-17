@@ -44,7 +44,7 @@ export default async function CaseManagerCommunicationPage() {
               >
                 <div className="mb-2 flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <h2 className="font-semibold text-slate-900 dark:text-white">{c.patient}</h2>
+                    <h2 className="text-base font-semibold text-slate-900 dark:text-white">{c.patient}</h2>
                     <p className="text-xs text-slate-400 dark:text-slate-500">
                       {c.country} · {c.email}
                     </p>

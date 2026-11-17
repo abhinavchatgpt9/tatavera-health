@@ -52,7 +52,7 @@ export default function AboutPage() {
                   Every patient deserves access to world-class medical care, regardless of where they live or their budget. We remove the barriers — language, geography, cost, complexity — that prevent patients from getting the treatment they need.
                 </p>
                 <p className="text-gray-600 leading-relaxed">
-                  We work exclusively with JCI and NABH-accredited hospitals, and our services are completely free for patients. We are compensated by our partner hospitals, with zero markup on hospital fees.
+                  We work exclusively with JCI and NABH-accredited hospitals, and our enquiry review and coordination support are free for patients. You pay for your treatment, hospital stay, travel and follow-up. We are compensated by our partner hospitals, with no markup on hospital fees.
                 </p>
               </div>
               <div>

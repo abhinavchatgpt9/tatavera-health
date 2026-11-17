@@ -6,7 +6,7 @@ import FAQ from '@/components/FAQ';
 
 export const metadata: Metadata = {
   title: 'FAQ | Tatvavera Health',
-  description: 'Frequently asked questions about medical tourism, costs, visas, hospital quality, and how our free service works.',
+  description: 'Frequently asked questions about medical tourism, costs, visas, hospital quality, and what is free and what you pay for.',
 };
 
 export default function FaqPage() {
@@ -26,7 +26,7 @@ export default function FaqPage() {
         <section className="py-10 text-center bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
           <p className="text-slate-600 dark:text-slate-400 text-sm mb-3">Still unsure?</p>
           <Link href="/free-consultation" className="text-blue-600 dark:text-blue-400 font-semibold hover:underline">
-            Ask our team — free consultation →
+            Ask our team: request a callback →
           </Link>
         </section>
       </main>

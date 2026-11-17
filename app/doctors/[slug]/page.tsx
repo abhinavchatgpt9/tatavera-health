@@ -61,7 +61,7 @@ export default function DoctorProfilePage({ params }: Props) {
                 </div>
               </div>
               <a href="#lead-form" className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors flex-shrink-0">
-                Book Consultation
+                Request a callback
               </a>
             </div>
           </div>
@@ -113,11 +113,11 @@ export default function DoctorProfilePage({ params }: Props) {
             {/* Sidebar */}
             <div className="space-y-5">
               <div className="bg-white border border-gray-200 rounded-2xl p-5 sticky top-24">
-                <h3 className="font-bold text-gray-900 mb-3">Get a Second Opinion or Book Consultation</h3>
+                <h3 className="font-bold text-gray-900 mb-3">Ask About This Doctor or Get a Second Opinion</h3>
                 <a href="#lead-form" className="block w-full text-center py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors mb-3">
-                  Book Consultation
+                  Request a callback
                 </a>
-                <p className="text-xs text-gray-400 text-center">Free · Secure · No obligation</p>
+                <p className="text-xs text-gray-400 text-center">Our review is free · No obligation</p>
                 <div className="mt-4 pt-4 border-t border-gray-100 space-y-1.5 text-sm text-gray-500">
                   <p>🏥 {doctor.hospital}</p>
                   <p>⏱ {doctor.experience} years experience</p>
@@ -129,7 +129,7 @@ export default function DoctorProfilePage({ params }: Props) {
         </div>
 
         <div id="lead-form">
-          <LeadForm />
+          <LeadForm doctor={doctor.name} hospital={doctor.hospital} />
         </div>
       </main>
       <Footer />

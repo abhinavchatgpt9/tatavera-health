@@ -74,7 +74,7 @@ export default function FAQ() {
               <h3 className="text-2xl font-bold mb-2">Still have questions?</h3>
               <p className="text-blue-100 mb-6 max-w-md mx-auto">Our medical coordinators are available 24/7 to guide you every step of the way.</p>
               <a href="/free-consultation" className="inline-flex items-center gap-2 bg-white text-blue-700 hover:bg-blue-50 font-bold px-7 py-3 rounded-2xl transition-all duration-200 shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:scale-95">
-                Get Free Consultation
+                Request a callback
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>

@@ -135,3 +135,17 @@ export function isValidE164(value: string): boolean {
   if (!/^\+[1-9]\d{6,14}$/.test(value)) return false;
   return parsePhoneNumberFromString(value)?.isValid() ?? false;
 }
+
+/** Best guess of the visitor's country from the browser locale (e.g. "en-KE" -> "KE"), or null. */
+export function guessCountryIso(): CountryCode | null {
+  try {
+    const locales = typeof navigator !== 'undefined' ? [...(navigator.languages ?? []), navigator.language] : [];
+    for (const locale of locales) {
+      const region = locale?.split('-')[1]?.toUpperCase();
+      if (region && COUNTRY_OPTIONS.some((c) => c.iso === region)) return region as CountryCode;
+    }
+  } catch {
+    // Locale not available: fall back to the default.
+  }
+  return null;
+}
