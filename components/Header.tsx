@@ -8,7 +8,7 @@ import DarkModeToggle from '@/components/DarkModeToggle';
 
 const NAV_LINKS = [
   { label: 'Treatments', href: '/treatments' },
-  { label: 'Hospitals', href: '/hospitals' },
+  { label: 'Best Hospitals', href: '/best-hospitals' },
   { label: 'Doctors', href: '/doctors' },
   { label: 'Destinations', href: '/destinations' },
   { label: 'How It Works', href: '/how-it-works' },

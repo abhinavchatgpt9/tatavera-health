@@ -105,6 +105,12 @@ export default function TreatmentDetailPage({ params }: Props) {
                 </div>
               </section>
 
+              <section>
+                <Link href={`/best-hospitals/${procedure.slug}`} className="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-5 py-3 text-blue-700 font-semibold hover:bg-blue-100">
+                  See the best hospitals in India for {procedure.name}
+                </Link>
+              </section>
+
               {/* Recommended Hospitals */}
               {FEATURED_HOSPITALS.length > 0 && (
               <section>
