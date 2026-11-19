@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { PhoneCall, MessageCircle, Search, Wallet, Clock, Lock } from 'lucide-react';
-import { SITE_TAGLINE, QUICK_LINKS, WHATSAPP_NUMBER, CALLBACK_TIMEFRAME, CONTACT_PHONE, CONTACT_PHONE_TEL } from '@/lib/constants';
+import { SITE_TAGLINE, HOME_H1, QUICK_LINKS, WHATSAPP_NUMBER, CALLBACK_TIMEFRAME, CONTACT_PHONE, CONTACT_PHONE_TEL } from '@/lib/constants';
 import { Button } from '@/components/ui/Button';
 import { motion, MagneticButton } from '@/components/ui/motion';
 
@@ -77,8 +77,11 @@ export default function Hero() {
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <motion.div initial="hidden" animate="visible" variants={container} className="max-w-xl text-left lg:py-6">
             <motion.h1 variants={item} className="mb-5 max-w-xl text-balance text-4xl font-bold leading-[1.1] tracking-tight text-slate-900 dark:text-white md:text-5xl lg:text-[3.4rem]">
-              {SITE_TAGLINE}
+              {HOME_H1}
             </motion.h1>
+            <motion.p variants={item} className="-mt-2 mb-5 text-lg font-semibold text-blue-700 dark:text-blue-300">
+              {SITE_TAGLINE}
+            </motion.p>
 
             <motion.p variants={item} className="mb-8 max-w-xl text-lg leading-relaxed text-slate-600 dark:text-slate-300">
               We help patients from <strong className="font-semibold text-slate-900 dark:text-white">around the world</strong> find the right hospital and doctor in India, for any treatment need. Share your case and our team will guide you through the next steps.

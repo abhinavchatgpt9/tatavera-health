@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import LeadForm from '@/components/LeadForm';
-import { DESTINATIONS, FEATURED_HOSPITALS, TESTIMONIALS, CALLBACK_TIMEFRAME } from '@/lib/constants';
+import { DESTINATIONS, PROCEDURES, BLOG_POSTS, FEATURED_HOSPITALS, TESTIMONIALS, CALLBACK_TIMEFRAME } from '@/lib/constants';
 
 type Props = { params: { slug: string } };
 
@@ -14,6 +14,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `Medical Treatment in ${dest.country} | Hospitals & Cost | Tatvavera Health`,
     description: `Why choose ${dest.country} for medical treatment? Top hospitals, cost advantages, visa info, and patient stories. ${dest.highlight}.`,
+    alternates: { canonical: `/destinations/${dest.slug}` },
   };
 }
 
@@ -25,12 +26,7 @@ export default function DestinationDetailPage({ params }: Props) {
   const dest = DESTINATIONS.find((d) => d.slug === params.slug);
   if (!dest) notFound();
 
-  const costComparisons = [
-    { procedure: 'Heart Bypass', home: '$80,000–$120,000', here: '$6,000–$9,000', saving: '90%' },
-    { procedure: 'Knee Replacement', home: '$40,000–$70,000', here: '$3,500–$5,500', saving: '88%' },
-    { procedure: 'Liver Transplant', home: '$200,000+', here: '$25,000–$45,000', saving: '80%' },
-    { procedure: 'IVF (cycle)', home: '$15,000–$25,000', here: '$2,500–$4,500', saving: '82%' },
-  ];
+  const isIndia = dest.slug === 'india';
 
   return (
     <>
@@ -71,32 +67,29 @@ export default function DestinationDetailPage({ params }: Props) {
                 </p>
               </section>
 
-              {/* Cost comparison */}
-              <section>
-                <h2 className="text-2xl font-bold text-gray-900 mb-5">Cost Advantages</h2>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="bg-gray-50 border-b border-gray-100">
-                        <th className="text-left py-3 px-4 font-semibold text-gray-700">Procedure</th>
-                        <th className="text-right py-3 px-4 font-semibold text-gray-700">Home Country</th>
-                        <th className="text-right py-3 px-4 font-semibold text-gray-700">{dest.country}</th>
-                        <th className="text-right py-3 px-4 font-semibold text-green-600">You Save</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
-                      {costComparisons.map((row) => (
-                        <tr key={row.procedure} className="hover:bg-gray-50">
-                          <td className="py-3 px-4 text-gray-800 font-medium">{row.procedure}</td>
-                          <td className="py-3 px-4 text-right text-gray-500 line-through">{row.home}</td>
-                          <td className="py-3 px-4 text-right font-semibold text-gray-900">{row.here}</td>
-                          <td className="py-3 px-4 text-right font-bold text-green-600">{row.saving}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </section>
+              {/* Costs. Only shown for India. No home-country comparison is published because it has no dated source. */}
+              {isIndia && (
+                <section>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">What treatment in India costs</h2>
+                  <p className="text-gray-600 leading-relaxed mb-4">
+                    The cost depends on the procedure, the hospital, the room category, the implants or devices used and how long you stay. Each treatment page shows an indicative range and says what it leaves out. The hospital estimate for your case confirms what is included.
+                  </p>
+                  <ul className="grid sm:grid-cols-2 gap-2 mb-4">
+                    {PROCEDURES.map((p) => (
+                      <li key={p.slug}>
+                        <Link href={`/treatments/${p.slug}`} className="block rounded-xl border border-gray-100 px-4 py-3 text-sm font-medium text-gray-800 hover:border-blue-200 hover:text-blue-600 transition-colors">
+                          {p.name}: costs and planning
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    Travel, accommodation, visa, medicines after discharge and follow-up are normally paid separately. Our guide on{' '}
+                    <Link href="/blog/planning-treatment-in-india-costs-beyond-the-hospital-bill" className="text-blue-600 underline underline-offset-2 hover:text-blue-700">costs beyond the hospital bill</Link>{' '}
+                    lists what to plan for. You can also read how <Link href="/how-it-works" className="text-blue-600 underline underline-offset-2 hover:text-blue-700">our process works</Link> or see our <Link href="/services" className="text-blue-600 underline underline-offset-2 hover:text-blue-700">services</Link>.
+                  </p>
+                </section>
+              )}
 
               {/* Top Hospitals */}
               {FEATURED_HOSPITALS.length > 0 && (
@@ -143,6 +136,23 @@ export default function DestinationDetailPage({ params }: Props) {
                   </div>
                 </div>
               </section>
+
+              {isIndia && BLOG_POSTS.length > 0 && (
+                <section>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Planning guides</h2>
+                  <div className="space-y-3">
+                    {BLOG_POSTS.map((post) => (
+                      <Link key={post.slug} href={`/blog/${post.slug}`} className="flex items-center gap-3 p-4 bg-white border border-gray-100 rounded-xl hover:border-blue-200 hover:shadow-sm transition-all group">
+                        <div className="text-2xl">📰</div>
+                        <div>
+                          <p className="font-semibold text-gray-900 group-hover:text-blue-600">{post.title}</p>
+                          <p className="text-xs text-gray-400">{post.readTime} min read</p>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </section>
+              )}
 
               {/* Patient Stories */}
               {TESTIMONIALS.length > 0 && (

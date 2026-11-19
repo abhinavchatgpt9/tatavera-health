@@ -3,14 +3,32 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { BLOG_POSTS } from '@/lib/constants';
+import InlineLinks from '@/components/InlineLinks';
+import { BLOG_POSTS, SITE_NAME } from '@/lib/constants';
 
 type Props = { params: { slug: string } };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = BLOG_POSTS.find((p) => p.slug === params.slug);
   if (!post) return {};
-  return { title: `${post.title} | Tatvavera Health`, description: post.excerpt };
+  const path = `/blog/${post.slug}`;
+  return {
+    title: `${post.title} | Tatvavera Health`,
+    description: post.excerpt,
+    alternates: { canonical: path },
+    authors: [{ name: post.author }],
+    openGraph: {
+      type: 'article',
+      url: path,
+      siteName: SITE_NAME,
+      title: post.title,
+      description: post.excerpt,
+      publishedTime: post.date,
+      modifiedTime: post.updated,
+      images: [{ url: '/og-image.png', width: 1200, height: 630, alt: SITE_NAME }],
+    },
+    twitter: { card: 'summary_large_image', title: post.title, description: post.excerpt, images: ['/og-image.png'] },
+  };
 }
 
 export function generateStaticParams() {
@@ -37,21 +55,32 @@ export default function BlogArticlePage({ params }: Props) {
           <span className="px-3 py-1 bg-blue-100 text-blue-600 text-sm font-medium rounded-full">{post.category}</span>
           <h1 className="text-4xl font-bold text-gray-900 mt-4 mb-4 leading-tight">{post.title}</h1>
 
-          <div className="flex items-center gap-4 text-sm text-gray-500 mb-8 pb-8 border-b border-gray-100">
-            <span>📅 {new Date(post.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500 mb-8 pb-8 border-b border-gray-100">
+            <span>By {post.author}</span>
+            <span>📅 {post.updated === post.date ? 'Published' : 'Updated'} {new Date(post.updated).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
             <span>⏱ {post.readTime} min read</span>
           </div>
 
-          {/* Content placeholder */}
           <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed space-y-6">
             <p className="text-xl text-gray-600">{post.excerpt}</p>
-            <p>Medical tourism has grown exponentially over the last decade, with millions of patients choosing to travel abroad for treatments that are either unavailable, unaffordable, or subject to long waiting times in their home countries. This guide covers everything you need to know to plan a safe and successful medical journey.</p>
-            <h2 className="text-2xl font-bold text-gray-900 mt-8">Key Considerations</h2>
-            <p>Before choosing a hospital or doctor abroad, it&apos;s essential to verify accreditation status, surgeon credentials, and outcomes data. Our team at Tatvavera Health vets every partner hospital and doctor on your behalf.</p>
-            <h2 className="text-2xl font-bold text-gray-900 mt-8">Cost Savings</h2>
-            <p>Patients typically save 60-85% compared to Western pricing, without compromising on quality. All our partner hospitals hold JCI or NABH accreditation — the same international standards as leading Western hospitals.</p>
-            <h2 className="text-2xl font-bold text-gray-900 mt-8">Planning Your Journey</h2>
-            <p>Tatvavera Health handles everything — from initial case review and hospital matching to visa assistance, airport transfers, accommodation, and post-treatment follow-up. Our enquiry review and coordination are free for patients; you pay for treatment, travel and follow-up.</p>
+            {post.sections.map((section) => (
+              <section key={section.heading} className="space-y-4">
+                <h2 className="text-2xl font-bold text-gray-900 mt-8">{section.heading}</h2>
+                {section.paragraphs?.map((para, i) => (
+                  <p key={i}><InlineLinks text={para} /></p>
+                ))}
+                {section.bullets && (
+                  <ul className="list-disc pl-6 space-y-2">
+                    {section.bullets.map((b) => (
+                      <li key={b}><InlineLinks text={b} /></li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+            ))}
+            <p className="text-sm text-gray-500 border-t border-gray-100 pt-6">
+              This guide is general information, not medical advice. Always follow the instructions of your own doctor and treating team.
+            </p>
           </div>
 
           {/* CTA */}

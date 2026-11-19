@@ -4,16 +4,23 @@ import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import LeadForm from '@/components/LeadForm';
-import { PROCEDURES, FEATURED_HOSPITALS, FEATURED_DOCTORS, TESTIMONIALS, FAQ, CALLBACK_TIMEFRAME } from '@/lib/constants';
+import InlineLinks from '@/components/InlineLinks';
+import { PROCEDURES, PROCEDURE_SEO, PROCEDURE_FAQS, FEATURED_HOSPITALS, FEATURED_DOCTORS, TESTIMONIALS, FAQ, CALLBACK_TIMEFRAME } from '@/lib/constants';
 
 type Props = { params: { slug: string } };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const procedure = PROCEDURES.find((p) => p.slug === params.slug);
   if (!procedure) return {};
+  const seoName = PROCEDURE_SEO[procedure.slug]?.title ?? procedure.name;
+  const title = `${seoName} in India: Costs & Planning | Tatvavera Health`;
+  const description = `${procedure.name} in India: indicative cost from $${procedure.costFrom.toLocaleString()}, usual stay and recovery plan, and how to request a callback and a hospital estimate for your case.`;
   return {
-    title: `${procedure.name} Abroad | Cost & Hospitals | Tatvavera Health`,
-    description: `${procedure.name} abroad: estimated cost from $${procedure.costFrom.toLocaleString()}, recovery time and how to request a callback and a hospital estimate for your case.`,
+    title,
+    description,
+    alternates: { canonical: `/treatments/${procedure.slug}` },
+    openGraph: { type: 'website', url: `/treatments/${procedure.slug}`, title, description, images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Tatvavera Health' }] },
+    twitter: { card: 'summary_large_image', title, description, images: ['/og-image.png'] },
   };
 }
 
@@ -24,6 +31,10 @@ export function generateStaticParams() {
 export default function TreatmentDetailPage({ params }: Props) {
   const procedure = PROCEDURES.find((p) => p.slug === params.slug);
   if (!procedure) notFound();
+
+  // General questions that make no unsupported claims (what is free, visas, companions, follow-up).
+  const generalFaqs = FAQ.filter((f) => [3, 4, 6].includes(f.id)).map((f) => ({ question: f.question, answer: f.answer }));
+  const faqItems = [...(PROCEDURE_FAQS[procedure.slug] ?? []), ...generalFaqs];
 
   const steps = [
     { label: 'Consultation', desc: 'Initial video consultation with specialist.' },
@@ -50,7 +61,7 @@ export default function TreatmentDetailPage({ params }: Props) {
             <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
               <div className="max-w-2xl">
                 <span className="px-3 py-1 bg-blue-100 text-blue-600 text-sm font-medium rounded-full">{procedure.category}</span>
-                <h1 className="text-4xl font-bold text-gray-900 mt-3 mb-3">{procedure.name}</h1>
+                <h1 className="text-4xl font-bold text-gray-900 mt-3 mb-3">{PROCEDURE_SEO[procedure.slug]?.h1 ?? procedure.name}</h1>
                 <p className="text-gray-600 text-lg">{procedure.description}</p>
                 <div className="flex flex-wrap gap-4 mt-5">
                   <div className="bg-white border border-gray-200 rounded-xl px-4 py-3">
@@ -179,18 +190,18 @@ export default function TreatmentDetailPage({ params }: Props) {
               </section>
               )}
 
-              {/* FAQ */}
+              {/* FAQ: questions about this procedure first, then the general ones about fees, visas and follow-up */}
               <section>
                 <h2 className="text-2xl font-bold text-gray-900 mb-5">Frequently Asked Questions</h2>
                 <div className="space-y-4">
-                  {FAQ.slice(0, 4).map((item) => (
-                    <details key={item.id} className="group bg-white border border-gray-100 rounded-xl">
+                  {faqItems.map((item) => (
+                    <details key={item.question} className="group bg-white border border-gray-100 rounded-xl">
                       <summary className="cursor-pointer font-semibold text-gray-800 px-5 py-4 flex items-center justify-between list-none">
                         {item.question}
                         <span className="text-gray-400 group-open:rotate-180 transition-transform text-xs">▼</span>
                       </summary>
                       <p className="px-5 pb-4 text-gray-600 text-sm leading-relaxed border-t border-gray-50 pt-3">
-                        {item.answer}
+                        <InlineLinks text={item.answer} />
                       </p>
                     </details>
                   ))}

@@ -64,6 +64,7 @@ const SECTIONS: LegalSection[] = [
     bullets: [
       'If you log in, we set a session cookie so the site knows you are signed in. It is needed for login to work.',
       'We use Vercel Web Analytics to count visits to pages. It is used for simple traffic statistics.',
+      'We also count, without your name or contact details, when an enquiry is completed and when the WhatsApp button is clicked. We do not send your treatment or medical information to analytics.',
     ],
   },
   {

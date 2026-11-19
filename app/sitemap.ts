@@ -1,14 +1,13 @@
 import type { MetadataRoute } from 'next';
 import { SITE_URL } from '@/lib/constants';
+import { getSitemapPages } from '@/lib/seo-pages';
 
-// Public, indexable pages only. Add dynamic pages (treatments, blog posts) here once they exist in the database.
-const PAGES = ['', 'about', 'services', 'how-it-works', 'why-choose-us', 'faq', 'free-consultation', 'treatments', 'destinations', 'hospitals', 'best-hospitals', 'doctors', 'patient-stories', 'blog', 'privacy', 'terms'];
-
+// Lists every public, indexable page once, including treatment, destination, hospital-guide and blog pages.
+// Page dates come from lib/seo-pages.ts so they change only when content changes, not on every build.
 export default function sitemap(): MetadataRoute.Sitemap {
-  return PAGES.map((path) => ({
-    url: `${SITE_URL}${path ? `/${path}` : ''}`,
-    lastModified: new Date(),
-    changeFrequency: 'weekly',
+  return getSitemapPages().map(({ path, lastModified }) => ({
+    url: `${SITE_URL}${path}`,
+    lastModified: new Date(`${lastModified}T00:00:00Z`),
     priority: path === '' ? 1 : 0.7,
   }));
 }

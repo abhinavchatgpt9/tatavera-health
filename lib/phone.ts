@@ -8,6 +8,7 @@ import {
 import { Metadata } from 'libphonenumber-js/core';
 import maxMetadata from 'libphonenumber-js/metadata.max.json';
 import examples from 'libphonenumber-js/examples.mobile.json';
+import { COUNTRY_NAMES } from '@/lib/country-names';
 
 /** Shown first in the country pickers (India first, then key patient markets). */
 const PINNED: CountryCode[] = ['IN', 'KE', 'NG', 'TZ', 'UG', 'ET', 'GH', 'ZA', 'AE', 'SA', 'KW', 'EG', 'GB', 'US'];
@@ -15,6 +16,9 @@ const PINNED: CountryCode[] = ['IN', 'KE', 'NG', 'TZ', 'UG', 'ET', 'GH', 'ZA', '
 let regionNames: Intl.DisplayNames | null = null;
 
 export function countryName(iso: string): string {
+  // Fixed names first, so the server and the browser render exactly the same text.
+  const fixed = COUNTRY_NAMES[iso.toUpperCase()];
+  if (fixed) return fixed;
   try {
     if (!regionNames) regionNames = new Intl.DisplayNames(['en'], { type: 'region' });
     return regionNames.of(iso) ?? iso;

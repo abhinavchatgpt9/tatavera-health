@@ -6,7 +6,8 @@ import { BLOG_POSTS, BLOG_CATEGORIES } from '@/lib/constants';
 
 export const metadata: Metadata = {
   title: 'Medical Tourism Blog & Resources | Tatvavera Health',
-  description: 'Expert guides on treatment abroad, destination tips, visa information, and patient stories to help you make informed decisions.',
+  description: 'Practical guides for international patients planning treatment in India: costs beyond the hospital bill, travel, and follow-up after you return home.',
+  alternates: { canonical: '/blog' },
 };
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -54,7 +55,7 @@ export default function BlogPage({
                 Your Medical Tourism Guide
               </h1>
               <p className="text-orange-100 text-lg max-w-xl">
-                Expert articles on treatment abroad, destination guides, visa tips, and patient stories — everything you need to plan your medical journey with confidence.
+                Practical guides for international patients planning treatment in India, from the costs beyond the hospital bill to follow-up after you return home.
               </p>
             </div>
           </div>
@@ -118,7 +119,7 @@ export default function BlogPage({
             <div className="text-center py-20">
               <div className="text-5xl mb-4">📰</div>
               <p className="text-slate-400 text-lg">No articles in this category yet.</p>
-              <p className="text-slate-400 text-sm mt-1">Check back soon — we publish weekly!</p>
+              <p className="text-slate-400 text-sm mt-1">Try another category, or see all articles.</p>
             </div>
           )}
 
@@ -127,8 +128,8 @@ export default function BlogPage({
             <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.8) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
             <div className="relative flex flex-col md:flex-row items-center gap-6">
               <div className="flex-1">
-                <h3 className="text-xl font-bold mb-1">Get weekly tips in your inbox</h3>
-                <p className="text-blue-200 text-sm">Patient guides, cost comparisons, visa tips — delivered every Tuesday. Unsubscribe anytime.</p>
+                <h3 className="text-xl font-bold mb-1">Get new guides in your inbox</h3>
+                <p className="text-blue-200 text-sm">Patient guides and planning tips from our team. Unsubscribe anytime.</p>
               </div>
               <form className="flex gap-2 w-full md:w-auto">
                 <input

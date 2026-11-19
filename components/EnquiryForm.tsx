@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, FormEvent, ChangeEvent } from 'react';
 import Link from 'next/link';
+import { track } from '@vercel/analytics';
 import PhoneInput from '@/components/PhoneInput';
 import { COUNTRY_OPTIONS, countryName, guessCountryIso, validatePhone } from '@/lib/phone';
 import {
@@ -214,6 +215,8 @@ export default function EnquiryForm({
         throw new Error(data?.message || GENERIC_ERROR);
       }
       setReference(data.data?.reference ?? '');
+      // Counts one completed enquiry. Carries no name, contact details, treatment or medical information.
+      try { track('generate_lead', { form: idPrefix }); } catch { /* analytics must never affect the enquiry */ }
       onSuccess?.();
     } catch (err) {
       // Everything the patient typed stays in the form so they can simply press the button again.

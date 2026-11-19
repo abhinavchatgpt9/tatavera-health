@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { SITE_NAME, SITE_DESCRIPTION, SITE_TAGLINE, SITE_URL, BRAND_ALTERNATE_NAMES } from '@/lib/constants';
-import { Analytics } from '@vercel/analytics/next';
+import AnalyticsClient from '@/components/AnalyticsClient';
 import ThemeProvider from '@/components/ThemeProvider';
 import WhatsAppWidget from '@/components/WhatsAppWidget';
 import StickyMobileCTA from '@/components/StickyMobileCTA';
@@ -110,7 +110,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider>
           {children}
           <WhatsAppWidget />
-          <Analytics />
+          <AnalyticsClient />
           <StickyMobileCTA />
         </ThemeProvider>
       </body>

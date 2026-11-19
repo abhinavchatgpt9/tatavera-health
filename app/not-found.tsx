@@ -4,7 +4,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
 export const metadata: Metadata = {
-  title: 'Page Not Found | Tatavera Health',
+  title: 'Page Not Found | Tatvavera Health',
   robots: { index: false, follow: false },
 };
 
